@@ -1,3 +1,6 @@
 <template>
-    <h1>Home page </h1>
+  <div>
+    <h1>Ma page d'accueil</h1>
+    <p>Bonjour ! Cette page fonctionne parfaitement.</p>
+  </div>
 </template>
