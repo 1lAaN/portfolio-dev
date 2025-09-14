@@ -33,14 +33,15 @@
 
         <!-- Bouton CTA -->
         <div class="hidden md:block">
-          <UIButton
+          <UI-Button
             to="/contact"
             variant="primary"
             size="sm"
-            icon-right="mdi:arrow-right"
-          >
+            class="w-full"
+            @click="mobileMenuOpen = false"
+            >
             Contact
-          </UIButton>
+          </UI-Button>
         </div>
 
         <!-- Menu mobile -->
@@ -79,19 +80,16 @@
               {{ item.name }}
             </NuxtLink>
             
-            <div class="pt-2 border-t border-gray-100 mt-3">
-              <UIButton
+            <UI-Button
                 to="/contact"
                 variant="primary"
                 size="sm"
-                class="w-full"
-                @click="mobileMenuOpen = false"
+                icon-right="mdi:arrow-right"
               >
                 Contact
-              </UIButton>
+              </UI-Button>
             </div>
           </div>
-        </div>
       </Transition>
     </nav>
   </header>

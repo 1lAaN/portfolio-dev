@@ -22,7 +22,7 @@
       <!-- Actions rapides -->
       <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <div class="flex space-x-3">
-          <UIButton
+          <UI-Button
             v-if="project.demo_url"
             :href="project.demo_url"
             external
@@ -31,8 +31,8 @@
             icon-left="mdi:eye"
           >
             Démo
-          </UIButton>
-          <UIButton
+          </UI-Button>
+          <UI-Button
             v-if="project.github_url"
             :href="project.github_url"
             external
@@ -42,7 +42,7 @@
             class="bg-white/90 backdrop-blur"
           >
             Code
-          </UIButton>
+          </UI-Button>
         </div>
       </div>
 
