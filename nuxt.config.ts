@@ -1,7 +1,6 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  compatibilityDate: '2025-09-14',
   modules: [
     '@nuxtjs/tailwindcss'
-  ],
-  css: ['~/assets/css/main.css'], // Optionnel si tu veux des styles custom
+  ]
 })
