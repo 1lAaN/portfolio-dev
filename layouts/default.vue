@@ -1,17 +1,10 @@
+<!-- layouts/default.vue -->
 <template>
-  <div class="bg-neutral-900">
-    <!-- Header -->
+  <div class="min-h-screen bg-white">
     <LayoutHeader />
-    
-    <!-- Contenu principal -->
-    <main class="flex-1">
-      <NuxtPage />
+    <main>
+      <slot />
     </main>
-
-    <!-- Footer -->
     <LayoutFooter />
-    
-    
   </div>
 </template>
-

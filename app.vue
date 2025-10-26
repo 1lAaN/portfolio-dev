@@ -6,6 +6,6 @@
 
 <style>
 body {
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
 }
 </style>

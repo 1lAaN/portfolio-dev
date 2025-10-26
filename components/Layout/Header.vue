@@ -1,24 +1,60 @@
 <template>
-  <!-- ... ton header existant ... -->
-  <div class="hidden md:block">
-    <div class="flex items-center space-x-8">
-      <button
-        v-for="item in navigation"
-        :key="item.name"
-        @click="scrollToSection(item.href)"
-        class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors relative group"
-      >
-        {{ item.name }}
-        <span class="absolute inset-x-0 -bottom-px h-px bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform" />
-      </button>
-    </div>
-  </div>
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <div class="flex-shrink-0">
+          <span class="text-xl font-bold">Portfolio</span>
+        </div>
+
+        <!-- Navigation desktop - CENTREE -->
+        <div class="absolute left-1/2 transform -translate-x-1/2 hidden md:block">
+          <div class="flex items-center space-x-8">
+            <button
+              v-for="item in navigation"
+              :key="item.name"
+              @click="scrollToSection(item.href)"
+              class="nav-btn"
+            >
+              {{ item.name }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Espace vide pour équilibrer -->
+        <div class="flex-shrink-0 w-20 hidden md:block"></div>
+      </div>
+    </nav>
+  </header>
 </template>
 
-<script setup>
-// ... ton code existant ...
+<style scoped>
+.nav-btn {
+  background: none !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0.5rem 0.75rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s;
+  cursor: pointer;
+  font-family: inherit;
+}
 
-// Navigation items modifiés pour le scroll
+.nav-btn:hover {
+  color: #000000 !important;
+  text-decoration: underline;
+}
+
+.nav-btn:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+</style>
+
+<script setup>
 const navigation = [
   { name: 'Accueil', href: 'home' },
   { name: 'À propos', href: 'about' },
@@ -26,11 +62,10 @@ const navigation = [
   { name: 'Contact', href: 'contact' }
 ]
 
-// Ajoute cette fonction
 const scrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId)
   if (element) {
-    const headerHeight = 80
+    const headerHeight = 2
     const elementPosition = element.getBoundingClientRect().top
     const offsetPosition = elementPosition + window.pageYOffset - headerHeight
 

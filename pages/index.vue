@@ -5,7 +5,7 @@
     <section id="home" class="hero-section">
       <div class="container">
         <div class="hero-content">
-          <h1 class="hero-title">John Doe</h1>
+          <h1 class="hero-title">Ihlane Ambroise</h1>
           <p class="hero-subtitle">
             Développeur Full Stack spécialisé dans la création d'expériences digitales modernes et performantes
           </p>
@@ -28,7 +28,7 @@
           <h2 class="section-title">À propos</h2>
           <div class="about-text">
             <p>
-              Développeur passionné avec plus de 5 ans d'expérience dans la création d'applications web modernes. 
+              Développeur passionné avec plus de 3 ans d'expérience dans le developpement. 
               Je combine expertise technique et sens du design pour créer des solutions digitales qui font la différence.
             </p>
             <p>
