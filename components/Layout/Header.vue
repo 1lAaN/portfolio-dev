@@ -55,6 +55,9 @@
 </style>
 
 <script setup>
+const router = useRouter()
+const route = useRoute()
+
 const navigation = [
   { name: 'Accueil', href: 'home' },
   { name: 'À propos', href: 'about' },
@@ -62,17 +65,27 @@ const navigation = [
   { name: 'Contact', href: 'contact' }
 ]
 
-const scrollToSection = (sectionId) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    const headerHeight = 2
-    const elementPosition = element.getBoundingClientRect().top
-    const offsetPosition = elementPosition + window.pageYOffset - headerHeight
-
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: 'smooth'
-    })
+const scrollToSection = async (sectionId) => {
+  // Si on est sur la page projects, redirige vers l'accueil
+  if (route.path !== '/') {
+    await navigateTo('/')
+    // Attends que la navigation soit terminée
+    await nextTick()
   }
+  
+  // Puis scroll vers la section
+  setTimeout(() => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      const headerHeight = 120
+      const elementPosition = element.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - headerHeight
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
+    }
+  }, 100)
 }
 </script>

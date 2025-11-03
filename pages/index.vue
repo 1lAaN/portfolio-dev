@@ -37,15 +37,35 @@
             </p>
           </div>
           
-          <!-- Compétences -->
-          <div class="skills-grid">
-            <div v-for="skill in skills" :key="skill.name" class="skill-card">
-              <Icon :name="skill.icon" class="skill-icon" />
-              <h3 class="skill-name">{{ skill.name }}</h3>
-            </div>
+         <!-- Remplace la section compétences dans ton code -->
+    <!-- Compétences -->
+    <div class="skills-section">
+      <h3 class="skills-title">Skills/tools</h3>
+      <p class="skills-subtitle">
+        Voici la liste des langages de programmation, frameworks, outils... que je maîtrise.
+      </p>
+      
+      <div class="skills-grid-large">
+        <div v-for="skill in detailedSkills" :key="skill.name" class="skill-card-detailed">
+          <div class="skill-icon-wrapper">
+            <Icon :name="skill.icon" class="skill-icon-large" />
+          </div>
+          <h4 class="skill-name-large">{{ skill.name }}</h4>
+          <p class="skill-description">{{ skill.description }}</p>
+          <div class="skill-tags">
+            <span 
+              v-for="tag in skill.tags" 
+              :key="tag" 
+              class="skill-tag"
+            >
+              {{ tag }}
+            </span>
           </div>
         </div>
       </div>
+    </div>
+    </div>
+    </div>
     </section>
 
     <!-- Section Projets récents -->
@@ -235,12 +255,62 @@ useSeoMeta({
 // État réactif
 const submitting = ref(false)
 
-// Compétences
-const skills = [
-  { name: 'Frontend', icon: 'mdi:monitor' },
-  { name: 'Backend', icon: 'mdi:server' },
-  { name: 'Mobile', icon: 'mdi:cellphone' },
-  { name: 'Design', icon: 'mdi:palette' }
+// Compétences détaillées
+const detailedSkills = [
+  {
+    name: 'HTML/CSS',
+    icon: 'mdi:language-html5',
+    description: 'Ces deux langages sont les fondements des sites Web. HTML est utilisé pour créer la "structure" et CSS pour styliser la page.',
+    tags: ['langage']
+  },
+  {
+    name: 'TypeScript',
+    icon: 'mdi:language-typescript',
+    description: 'TypeScript est une surcouche de JavaScript qui vous permet d\'ajouter des types aux variables et aux fonctions.',
+    tags: ['langage']
+  },
+  {
+    name: 'Node.js/JavaScript',
+    icon: 'mdi:nodejs',
+    description: 'Node.JS est un environnement d\'exécution JavaScript côté serveur qui permet d\'exécuter du code JavaScript en dehors d\'un navigateur.',
+    tags: ['langage']
+  },
+  {
+    name: 'Vue.js',
+    icon: 'mdi:vuejs',
+    description: 'Vue.js est un framework JavaScript progressif pour construire des interfaces utilisateur interactives.',
+    tags: ['framework']
+  },
+  {
+    name: 'Nuxt.js',
+    icon: 'simple-icons:nuxtdotjs',
+    description: 'Nuxt.JS est un framework frontend basé sur Vue.JS pour créer des applications web modernes.',
+    tags: ['framework']
+  },
+  {
+    name: 'React',
+    icon: 'mdi:react',
+    description: 'React est une bibliothèque JavaScript pour construire des interfaces utilisateur avec des composants réutilisables.',
+    tags: ['framework']
+  },
+  {
+    name: 'PostgreSQL',
+    icon: 'mdi:database',
+    description: 'PostgreSQL est un système de gestion de base de données relationnelle open-source puissant et fiable.',
+    tags: ['database']
+  },
+  {
+    name: 'Git',
+    icon: 'mdi:git',
+    description: 'Git est un système de contrôle de version distribué pour suivre les modifications du code source.',
+    tags: ['tool']
+  },
+  {
+    name: 'Docker',
+    icon: 'mdi:docker',
+    description: 'Docker permet de créer, déployer et exécuter des applications dans des conteneurs isolés.',
+    tags: ['tool']
+  }
 ]
 
 // Projets récents (3 derniers)
@@ -319,6 +389,139 @@ const submitForm = async () => {
 </script>
 
 <style scoped>
+/* Skills Section détaillée */
+.skills-section {
+  margin-top: 4rem;
+}
+
+.skills-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.skills-subtitle {
+  text-align: center;
+  color: var(--color-gray-600);
+  margin-bottom: 3rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Modifier la largeur du container pour la section skills */
+.skills-section .container {
+  max-width: 1400px; /* Augmentation de la largeur maximale (au lieu de 1200px) */
+}
+
+/* Ajuster la grille pour profiter de l'espace supplémentaire */
+.skills-grid-large {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+/* Ajuster les breakpoints pour un meilleur responsive */
+@media (min-width: 1200px) {
+  .skills-grid-large {
+    grid-template-columns: repeat(3, 1fr); /* Force 3 colonnes sur grands écrans */
+  }
+}
+
+@media (min-width: 1600px) {
+  .skills-section .container {
+    max-width: 1600px; /* Encore plus large sur très grands écrans */
+  }
+}
+
+@media (min-width: 768px) {
+  .skills-grid-large {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .skills-grid-large {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.skill-card-detailed {
+  background-color: rgba(17, 24, 39, 0.8);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  height: 400px; /* Hauteur fixe pour toutes les cartes */
+}
+
+.skill-card-detailed:hover {
+  border-color: rgba(96, 165, 250, 0.5);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Pousse les tags en bas */
+.skill-description {
+  color: #9ca3af;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  flex: 1; /* Prend l'espace restant */
+  display: flex;
+  align-items: center; /* Centre verticalement le texte */
+}
+
+.skill-icon-wrapper {
+  height: 80px; /* Hauteur fixe pour la zone d'icône */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+}
+
+.skill-icon-large {
+  width: 4rem;
+  height: 4rem;
+  color: #f1f1f1;
+}
+
+.skill-name-large {
+  height: 60px; /* Hauteur fixe pour le titre */
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: var(--color-gray-50);
+}
+
+.skill-tags {
+  height: 40px; /* Hauteur fixe pour les tags */
+  display: flex;
+  align-items: flex-end;
+
+}
+
+/* Modifier la classe skill-tag existante ou l'ajouter */
+.skill-tag {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  font-weight: 500;
+  background-color: rgba(255, 255, 255, 0.1); /* Fond légèrement transparent */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Contour subtil */
+  color: #e5e7eb; /* Texte clair */
+  transition: all 0.2s ease;
+}
+
+.skill-tag:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
 /* Variables CSS */
 .portfolio-home {
   --color-primary: #000000;
