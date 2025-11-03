@@ -145,100 +145,44 @@
     <!-- Section Contact -->
     <section id="contact" class="contact-section">
       <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">Contact</h2>
-          <p class="section-subtitle">
-            Un projet en tête ? Discutons-en ! Je suis disponible pour de nouveaux défis.
-          </p>
-        </div>
+        <h2 class="section-title">Contact</h2>
+        <p class="section-subtitle">
+          N'hésitez pas à me contacter si vous êtes intéressé par mes services !
+        </p>
 
-        <div class="contact-content">
-          <!-- Informations de contact -->
-          <div class="contact-info">
-            <div class="contact-item">
-              <Icon name="mdi:email" class="contact-icon" />
-              <div>
-                <h3 class="contact-title">Email</h3>
-                <a href="mailto:hello@johndoe.dev" class="contact-link">
-                  hello@johndoe.dev
-                </a>
-              </div>
+        <div class="bento-grid">
+          <!-- Email -->
+          <a href="mailto:ihlane.ambroise@gmail.com" class="bento-item">
+            <div class="bento-icon-wrapper">
+              <Icon name="mdi:email" class="bento-icon" />
             </div>
-
-            <div class="contact-item">
-              <Icon name="mdi:map-marker" class="contact-icon" />
-              <div>
-                <h3 class="contact-title">Localisation</h3>
-                <p class="contact-text">Paris, France</p>
-              </div>
+            <div class="bento-content">
+              <h3>Email</h3>
+              <p>ihlane.ambroise@gmail.com</p>
             </div>
+          </a>
 
-            <div class="contact-item">
-              <Icon name="mdi:linkedin" class="contact-icon" />
-              <div>
-                <h3 class="contact-title">LinkedIn</h3>
-                <a href="https://linkedin.com/in/johndoe" target="_blank" class="contact-link">
-                  linkedin.com/in/johndoe
-                </a>
-              </div>
+          <!-- LinkedIn -->
+          <a href="https://www.linkedin.com/in/ihlane-ambroise-b3b427329/" target="_blank" class="bento-item">
+            <div class="bento-icon-wrapper">
+              <Icon name="mdi:linkedin" class="bento-icon" />
             </div>
-          </div>
-
-          <!-- Formulaire de contact -->
-          <form @submit.prevent="submitForm" class="contact-form">
-            <div class="form-group">
-              <label for="name" class="form-label">Nom complet</label>
-              <input
-                id="name"
-                v-model="form.name"
-                type="text"
-                required
-                class="form-input"
-              >
+            <div class="bento-content">
+              <h3>LinkedIn</h3>
+              <p>Suivre</p>
             </div>
+          </a>
 
-            <div class="form-group">
-              <label for="email" class="form-label">Email</label>
-              <input
-                id="email"
-                v-model="form.email"
-                type="email"
-                required
-                class="form-input"
-              >
+          <!-- GitHub -->
+          <a href="https://github.com/1laan" target="_blank" class="bento-item">
+            <div class="bento-icon-wrapper">
+              <Icon name="mdi:github" class="bento-icon" />
             </div>
-
-            <div class="form-group">
-              <label for="subject" class="form-label">Sujet</label>
-              <input
-                id="subject"
-                v-model="form.subject"
-                type="text"
-                required
-                class="form-input"
-              >
+            <div class="bento-content">
+              <h3>GitHub</h3>
+              <p>@1laan</p>
             </div>
-
-            <div class="form-group">
-              <label for="message" class="form-label">Message</label>
-              <textarea
-                id="message"
-                v-model="form.message"
-                rows="5"
-                required
-                class="form-textarea"
-              ></textarea>
-            </div>
-
-            <button
-              type="submit"
-              :disabled="submitting"
-              class="form-submit"
-              :class="{ 'submitting': submitting }"
-            >
-              {{ submitting ? 'Envoi en cours...' : 'Envoyer le message' }}
-            </button>
-          </form>
+          </a>
         </div>
       </div>
     </section>
@@ -248,8 +192,8 @@
 <script setup>
 // Configuration SEO
 useSeoMeta({
-  title: 'John Doe - Développeur Full Stack',
-  description: 'Développeur Full Stack spécialisé dans Vue.js, Nuxt.js et Node.js. Créateur d\'expériences digitales modernes et performantes.',
+  title: 'Ihlane Ambroise - Développeur Junior',
+  description: 'Développeur Junior Full Stack spécialisé dans la création d\'expériences digitales modernes et performantes.',
 })
 
 // État réactif
@@ -292,12 +236,6 @@ const detailedSkills = [
     icon: 'mdi:react',
     description: 'React est une bibliothèque JavaScript pour construire des interfaces utilisateur avec des composants réutilisables.',
     tags: ['framework']
-  },
-  {
-    name: 'PostgreSQL',
-    icon: 'mdi:database',
-    description: 'PostgreSQL est un système de gestion de base de données relationnelle open-source puissant et fiable.',
-    tags: ['database']
   },
   {
     name: 'Git',
@@ -343,14 +281,6 @@ const recentProjects = [
     githubUrl: 'https://github.com/johndoe/mobile-app'
   }
 ]
-
-// Formulaire de contact
-const form = reactive({
-  name: '',
-  email: '',
-  subject: '',
-  message: ''
-})
 
 // Méthodes
 const scrollToSection = (sectionId) => {
@@ -998,5 +928,61 @@ const submitForm = async () => {
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;
+}
+
+/* Ajouter ces styles */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.bento-item {
+  background-color: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 1rem;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.bento-item:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.bento-icon-wrapper {
+  flex-shrink: 0;
+}
+
+.bento-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--color-primary);
+}
+
+.bento-content h3 {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--color-gray-800);
+}
+
+.bento-content p {
+  color: var(--color-gray-600);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

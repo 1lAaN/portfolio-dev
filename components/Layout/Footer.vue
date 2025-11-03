@@ -12,7 +12,7 @@
             </p>
             <div class="flex space-x-4">
               <a 
-                href="https://github.com" 
+                href="https://github.com/1laan" 
                 target="_blank"
                 rel="noopener noreferrer"
                 class="text-gray-400 hover:text-gray-600 transition-colors"
@@ -20,52 +20,56 @@
                 <Icon name="mdi:github" class="w-5 h-5" />
               </a>
               <a 
-                href="https://linkedin.com" 
+                href="https://linkedin.com/in/ihlane-ambroise-b3b427329/" 
                 target="_blank"
                 rel="noopener noreferrer"
                 class="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <Icon name="mdi:linkedin" class="w-5 h-5" />
               </a>
-              <a 
-                href="https://twitter.com" 
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <Icon name="mdi:twitter" class="w-5 h-5" />
-              </a>
             </div>
           </div>
           
           <!-- Colonne 2: Navigation -->
-          <div>
-            <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
-              Navigation
-            </h4>
-            <ul class="space-y-2">
-              <li>
-                <NuxtLink to="/" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                  Accueil
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink to="/about" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                  À propos
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink to="/projects" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                  Projets
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink to="/contact" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                  Contact
-                </NuxtLink>
-              </li>
-            </ul>
-          </div>
+           <div>
+    <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
+      Navigation
+    </h4>
+    <ul class="space-y-2">
+      <li>
+        <button 
+          @click="scrollToSection('home')" 
+          class="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          Accueil
+        </button>
+      </li>
+      <li>
+        <button 
+          @click="scrollToSection('about')" 
+          class="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          À propos
+        </button>
+      </li>
+      <li>
+        <button 
+          @click="scrollToSection('projects')" 
+          class="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          Projets
+        </button>
+      </li>
+      <li>
+        <button 
+@click="scrollToSection('contact')" 
+          class="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          Contact
+        </button>
+      </li>
+    </ul>
+  </div>
           
           <!-- Colonne 3: Contact -->
           <div>
@@ -75,7 +79,7 @@
             <ul class="space-y-2 text-sm text-gray-600">
               <li class="flex items-center">
                 <Icon name="mdi:email" class="w-4 h-4 mr-2" />
-                hello@portfolio.dev
+                ihlane.ambroise@gmail.com
               </li>
               <li class="flex items-center">
                 <Icon name="mdi:map-marker" class="w-4 h-4 mr-2" />
@@ -88,7 +92,7 @@
         <!-- Copyright -->
         <div class="border-t border-gray-200 mt-8 pt-6 text-center">
           <p class="text-sm text-gray-500">
-            © {{ currentYear }} Portfolio. Tous droits réservés.
+            © {{ currentYear }} Ihlane. Tous droits réservés.
           </p>
         </div>
       </div>
@@ -96,6 +100,45 @@
 
 </template>
 <script setup>
+const router = useRouter()
+const route = useRoute()
+
 // Computed
 const currentYear = computed(() => new Date().getFullYear())
+
+// Méthode de scroll
+const scrollToSection = async (sectionId) => {
+  // Si on est sur la page projects, redirige vers l'accueil
+  if (route.path !== '/') {
+    await navigateTo('/')
+    // Attends que la navigation soit terminée
+    await nextTick()
+  }
+  
+  // Puis scroll vers la section
+  setTimeout(() => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      const headerHeight = 120
+      const elementPosition = element.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - headerHeight
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      })
+ }
+  }, 100)
+}
 </script>
+
+<style scoped>
+/* Pour que les boutons ressemblent à des liens */
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+</style>
