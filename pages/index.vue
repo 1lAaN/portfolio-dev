@@ -448,7 +448,7 @@ const submitForm = async () => {
 }
 
 .skill-card-detailed {
-  background-color: rgba(17, 24, 39, 0.8);
+  /* background-color: rgba(17, 24, 39, 0.8); */ 
   border: 1px solid rgba(55, 65, 81, 0.5);
   padding: 2rem;
   border-radius: 0.5rem;
@@ -460,14 +460,14 @@ const submitForm = async () => {
 }
 
 .skill-card-detailed:hover {
-  border-color: rgba(96, 165, 250, 0.5);
+  border-color: rgba(96, 104, 250, 0.5);
   transform: translateY(-4px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 /* Pousse les tags en bas */
 .skill-description {
-  color: #9ca3af;
+  color: var(--color-gray-800);
   font-size: 0.875rem;
   line-height: 1.6;
   margin-bottom: 1rem;
@@ -487,7 +487,7 @@ const submitForm = async () => {
 .skill-icon-large {
   width: 4rem;
   height: 4rem;
-  color: #f1f1f1;
+  color: var(--color-primary)
 }
 
 .skill-name-large {
@@ -495,7 +495,7 @@ const submitForm = async () => {
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
-  color: var(--color-gray-50);
+  color: var(--color-primary);
 }
 
 .skill-tags {
@@ -511,15 +511,16 @@ const submitForm = async () => {
   font-size: 0.75rem;
   border-radius: 4px;
   font-weight: 500;
-  background-color: rgba(255, 255, 255, 0.1); /* Fond légèrement transparent */
+  background-color: var(--color-gray-300); /* Fond légèrement transparent */
   border: 1px solid rgba(255, 255, 255, 0.2); /* Contour subtil */
-  color: #e5e7eb; /* Texte clair */
+  color: var(--color-primary); /* Texte clair */
   transition: all 0.2s ease;
 }
 
 .skill-tag:hover {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--color-gray-800);
   border-color: rgba(255, 255, 255, 0.3);
+  color: var(--color-gray-100);
 }
 
 /* Variables CSS */
