@@ -1,8 +1,20 @@
 <template>
   <div>
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-      <p class="mt-2 text-gray-600">Bienvenue dans votre panneau d'administration</p>
+    <!-- Header avec bouton déconnexion -->
+    <div class="mb-8 flex justify-between items-center">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p class="mt-2 text-gray-600">Bienvenue dans votre panneau d'administration</p>
+      </div>
+      
+      <!-- Bouton de déconnexion visible -->
+      <button
+        @click="handleLogout"
+        class="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 transition-colors"
+      >
+        <Icon name="mdi:logout" class="h-5 w-5 mr-2" />
+        Se déconnecter
+      </button>
     </div>
 
     <!-- Statistiques -->
@@ -131,6 +143,8 @@ definePageMeta({
 })
 
 const supabase = useSupabase()
+const { logout } = useAuth()
+
 const stats = ref({
   totalProjects: 0,
   totalSkills: 0,
@@ -164,6 +178,13 @@ const loadStats = async () => {
     recentProjects.value = projects || []
   } catch (error) {
     console.error('Erreur lors du chargement des statistiques:', error)
+  }
+}
+
+// Gestion de la déconnexion
+const handleLogout = () => {
+  if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+    logout()
   }
 }
 
