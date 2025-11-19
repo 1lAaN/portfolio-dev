@@ -62,7 +62,7 @@
       </li>
       <li>
         <button 
-@click="scrollToSection('contact')" 
+          @click="scrollToSection('contact')" 
           class="text-sm text-gray-600 hover:text-gray-900 transition-colors"
         >
           Contact
@@ -89,10 +89,14 @@
           </div>
         </div>
         
-        <!-- Copyright -->
+        <!-- Copyright avec lien admin -->
         <div class="border-t border-gray-200 mt-8 pt-6 text-center">
           <p class="text-sm text-gray-500">
             © {{ currentYear }} Ihlane. Tous droits réservés.
+            <span class="mx-2">•</span>
+            <NuxtLink to="/admin/login" class="text-gray-400 hover:text-gray-600 transition-colors text-xs">
+              Admin
+            </NuxtLink>
           </p>
         </div>
       </div>

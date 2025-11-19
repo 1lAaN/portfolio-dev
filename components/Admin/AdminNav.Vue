@@ -5,7 +5,9 @@
         <!-- Logo et navigation -->
         <div class="flex">
           <div class="flex-shrink-0 flex items-center">
-            <span class="text-xl font-bold text-gray-900">Admin Portfolio</span>
+            <NuxtLink to="/admin" class="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors">
+              Admin Portfolio
+            </NuxtLink>
           </div>
           <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
             <NuxtLink
@@ -36,17 +38,17 @@
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center">
-          <button
-            @click="goToSite"
-            class="mr-4 inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+        <div class="flex items-center space-x-3">
+          <NuxtLink
+            to="/"
+            class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
           >
-            <Icon name="mdi:eye" class="w-4 h-4 mr-2" />
-            Voir le site
-          </button>
+            <Icon name="mdi:arrow-left" class="w-4 h-4 mr-2" />
+            Retour au site
+          </NuxtLink>
           <button
             @click="handleLogout"
-            class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800"
+            class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 transition-colors"
           >
             <Icon name="mdi:logout" class="w-4 h-4 mr-2" />
             Déconnexion
@@ -59,10 +61,6 @@
 
 <script setup>
 const { logout } = useAuth()
-
-const goToSite = () => {
-  navigateTo('/')
-}
 
 const handleLogout = () => {
   if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {

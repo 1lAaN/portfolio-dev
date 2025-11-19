@@ -45,8 +45,8 @@
             <!-- Image -->
             <div class="project-image">
               <img
-                v-if="project.image"
-                :src="project.image"
+                v-if="project.image_url"
+                :src="project.image_url"
                 :alt="project.title"
                 class="project-img"
               >
@@ -77,14 +77,14 @@
               <!-- Technologies -->
               <div class="project-technologies">
                 <span
-                  v-for="tech in project.technologies.slice(0, 4)"
+                  v-for="tech in project.technologies?.slice(0, 4)"
                   :key="tech"
                   class="tech-tag"
                 >
                   {{ tech }}
                 </span>
                 <span
-                  v-if="project.technologies.length > 4"
+                  v-if="project.technologies?.length > 4"
                   class="tech-more"
                 >
                   +{{ project.technologies.length - 4 }}
@@ -93,11 +93,11 @@
 
               <!-- Date et liens -->
               <div class="project-footer">
-                <span class="project-date">{{ formatDate(project.date) }}</span>
+                <span class="project-date">{{ formatDate(project.created_at) }}</span>
                 <div class="project-links">
                   <a
-                    v-if="project.demoUrl"
-                    :href="project.demoUrl"
+                    v-if="project.demo_url"
+                    :href="project.demo_url"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="project-link demo"
@@ -106,8 +106,8 @@
                     <Icon name="mdi:external-link" class="w-4 h-4" />
                   </a>
                   <a
-                    v-if="project.githubUrl"
-                    :href="project.githubUrl"
+                    v-if="project.github_url"
+                    :href="project.github_url"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="project-link github"
@@ -144,8 +144,8 @@
 
         <div class="modal-image">
           <img
-            v-if="selectedProject.image"
-            :src="selectedProject.image"
+            v-if="selectedProject.image_url"
+            :src="selectedProject.image_url"
             :alt="selectedProject.title"
             class="modal-img"
           >
@@ -157,7 +157,7 @@
         <div class="modal-body">
           <div class="modal-description">
             <h3>Description</h3>
-            <p>{{ selectedProject.fullDescription || selectedProject.description }}</p>
+            <p>{{ selectedProject.full_description || selectedProject.description }}</p>
           </div>
 
           <div class="modal-technologies">
@@ -175,8 +175,8 @@
 
           <div class="modal-actions">
             <a
-              v-if="selectedProject.demoUrl"
-              :href="selectedProject.demoUrl"
+              v-if="selectedProject.demo_url"
+              :href="selectedProject.demo_url"
               target="_blank"
               rel="noopener noreferrer"
               class="modal-btn primary"
@@ -185,8 +185,8 @@
               Voir la démo
             </a>
             <a
-              v-if="selectedProject.githubUrl"
-              :href="selectedProject.githubUrl"
+              v-if="selectedProject.github_url"
+              :href="selectedProject.github_url"
               target="_blank"
               rel="noopener noreferrer"
               class="modal-btn secondary"
@@ -204,9 +204,11 @@
 <script setup>
 // Configuration SEO
 useSeoMeta({
-  title: 'Tous mes projets - Portfolio John Doe',
+  title: 'Tous mes projets - Portfolio Ihlane Ambroise',
   description: 'Découvrez l\'ensemble de mes réalisations en développement web, des projets personnels aux collaborations professionnelles.',
 })
+
+const supabase = useSupabase()
 
 // État réactif
 const selectedCategory = ref('Tous')
@@ -215,44 +217,32 @@ const selectedProject = ref(null)
 // Catégories
 const categories = ['Tous', 'Web App', 'E-commerce', 'Mobile', 'API', 'Open Source']
 
-const supabase = useSupabase()
-
-// Charger les projets
-const recentProjects = ref([])
+// Charger tous les projets
+const allProjects = ref([])
 const loadProjects = async () => {
   const { data } = await supabase
     .from('projects')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(3)
-  recentProjects.value = data || []
-}
-
-// Charger les skills
-const detailedSkills = ref([])
-const loadSkills = async () => {
-  const { data } = await supabase
-    .from('skills')
-    .select('*')
-    .order('order', { ascending: true })
-  detailedSkills.value = data || []
+  
+  allProjects.value = data || []
 }
 
 onMounted(() => {
   loadProjects()
-  loadSkills()
 })
 
 // Computed
 const filteredProjects = computed(() => {
   if (selectedCategory.value === 'Tous') {
-    return allProjects
+    return allProjects.value
   }
-  return allProjects.filter(project => project.category === selectedCategory.value)
+  return allProjects.value.filter(project => project.category === selectedCategory.value)
 })
 
 // Méthodes
 const formatDate = (dateString) => {
+  if (!dateString) return ''
   const options = { year: 'numeric', month: 'long' }
   return new Date(dateString).toLocaleDateString('fr-FR', options)
 }
