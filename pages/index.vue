@@ -191,96 +191,33 @@
 
 <script setup>
 // Configuration SEO
-useSeoMeta({
-  title: 'Ihlane Ambroise - Développeur Junior',
-  description: 'Développeur Junior Full Stack spécialisé dans la création d\'expériences digitales modernes et performantes.',
+const supabase = useSupabase()
+
+// Charger les projets
+const recentProjects = ref([])
+const loadProjects = async () => {
+  const { data } = await supabase
+    .from('projects')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(3)
+  recentProjects.value = data || []
+}
+
+// Charger les skills
+const detailedSkills = ref([])
+const loadSkills = async () => {
+  const { data } = await supabase
+    .from('skills')
+    .select('*')
+    .order('order', { ascending: true })
+  detailedSkills.value = data || []
+}
+
+onMounted(() => {
+  loadProjects()
+  loadSkills()
 })
-
-// État réactif
-const submitting = ref(false)
-
-// Compétences détaillées
-const detailedSkills = [
-  {
-    name: 'HTML/CSS',
-    icon: 'mdi:language-html5',
-    description: 'Ces deux langages sont les fondements des sites Web. HTML est utilisé pour créer la "structure" et CSS pour styliser la page.',
-    tags: ['langage']
-  },
-  {
-    name: 'TypeScript',
-    icon: 'mdi:language-typescript',
-    description: 'TypeScript est une surcouche de JavaScript qui vous permet d\'ajouter des types aux variables et aux fonctions.',
-    tags: ['langage']
-  },
-  {
-    name: 'Node.js/JavaScript',
-    icon: 'mdi:nodejs',
-    description: 'Node.JS est un environnement d\'exécution JavaScript côté serveur qui permet d\'exécuter du code JavaScript en dehors d\'un navigateur.',
-    tags: ['langage']
-  },
-  {
-    name: 'Vue.js',
-    icon: 'mdi:vuejs',
-    description: 'Vue.js est un framework JavaScript progressif pour construire des interfaces utilisateur interactives.',
-    tags: ['framework']
-  },
-  {
-    name: 'Nuxt.js',
-    icon: 'simple-icons:nuxtdotjs',
-    description: 'Nuxt.JS est un framework frontend basé sur Vue.JS pour créer des applications web modernes.',
-    tags: ['framework']
-  },
-  {
-    name: 'React',
-    icon: 'mdi:react',
-    description: 'React est une bibliothèque JavaScript pour construire des interfaces utilisateur avec des composants réutilisables.',
-    tags: ['framework']
-  },
-  {
-    name: 'Git',
-    icon: 'mdi:git',
-    description: 'Git est un système de contrôle de version distribué pour suivre les modifications du code source.',
-    tags: ['tool']
-  },
-  {
-    name: 'Docker',
-    icon: 'mdi:docker',
-    description: 'Docker permet de créer, déployer et exécuter des applications dans des conteneurs isolés.',
-    tags: ['tool']
-  }
-]
-
-// Projets récents (3 derniers)
-const recentProjects = [
-  {
-    id: 1,
-    title: 'E-commerce Platform',
-    description: 'Plateforme e-commerce moderne avec Vue.js et Stripe, gestion complète des commandes et paiements sécurisés.',
-    technologies: ['Vue.js', 'Nuxt.js', 'Stripe', 'PostgreSQL'],
-    image: null,
-    demoUrl: 'https://demo.example.com',
-    githubUrl: 'https://github.com/johndoe/ecommerce'
-  },
-  {
-    id: 2,
-    title: 'Dashboard Analytics',
-    description: 'Tableau de bord analytique temps réel avec visualisations de données et système d\'alertes personnalisé.',
-    technologies: ['React', 'D3.js', 'Node.js', 'MongoDB'],
-    image: null,
-    demoUrl: 'https://analytics.example.com',
-    githubUrl: 'https://github.com/johndoe/dashboard'
-  },
-  {
-    id: 3,
-    title: 'Mobile App',
-    description: 'Application mobile cross-platform pour la gestion de tâches avec synchronisation cloud et notifications push.',
-    technologies: ['React Native', 'Firebase', 'Redux'],
-    image: null,
-    demoUrl: null,
-    githubUrl: 'https://github.com/johndoe/mobile-app'
-  }
-]
 
 // Méthodes
 const scrollToSection = (sectionId) => {

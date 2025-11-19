@@ -215,81 +215,33 @@ const selectedProject = ref(null)
 // Catégories
 const categories = ['Tous', 'Web App', 'E-commerce', 'Mobile', 'API', 'Open Source']
 
-// Tous les projets (en attendant Supabase)
-const allProjects = [
-  {
-    id: 1,
-    title: 'E-commerce Platform',
-    category: 'E-commerce',
-    description: 'Plateforme e-commerce moderne avec Vue.js et Stripe, gestion complète des commandes et paiements sécurisés.',
-    fullDescription: 'Une plateforme e-commerce complète développée avec Vue.js et Nuxt.js. Elle intègre Stripe pour les paiements, un système de gestion des commandes, un tableau de bord administrateur, et une interface utilisateur moderne et responsive. Le projet inclut également un système de notifications en temps réel et une API REST complète.',
-    technologies: ['Vue.js', 'Nuxt.js', 'Stripe', 'PostgreSQL', 'Node.js', 'Tailwind CSS'],
-    image: null,
-    demoUrl: 'https://demo.example.com',
-    githubUrl: 'https://github.com/johndoe/ecommerce',
-    date: '2024-12-01'
-  },
-  {
-    id: 2,
-    title: 'Dashboard Analytics',
-    category: 'Web App',
-    description: 'Tableau de bord analytique temps réel avec visualisations de données et système d\'alertes personnalisé.',
-    fullDescription: 'Un tableau de bord analytique sophistiqué pour visualiser les données en temps réel. Développé avec React et D3.js pour des graphiques interactifs. Inclut un système d\'alertes automatiques, des filtres avancés, et une API robuste pour l\'intégration de données externes.',
-    technologies: ['React', 'D3.js', 'Node.js', 'MongoDB', 'Socket.io', 'Chart.js'],
-    image: null,
-    demoUrl: 'https://analytics.example.com',
-    githubUrl: 'https://github.com/johndoe/dashboard',
-    date: '2024-11-15'
-  },
-  {
-    id: 3,
-    title: 'Mobile Task Manager',
-    category: 'Mobile',
-    description: 'Application mobile cross-platform pour la gestion de tâches avec synchronisation cloud et notifications push.',
-    fullDescription: 'Application mobile développée avec React Native pour iOS et Android. Elle permet la gestion collaborative de tâches avec synchronisation en temps réel, notifications push, mode hors ligne, et intégration avec les calendriers natifs.',
-    technologies: ['React Native', 'Firebase', 'Redux', 'Expo'],
-    image: null,
-    demoUrl: null,
-    githubUrl: 'https://github.com/johndoe/mobile-app',
-    date: '2024-10-20'
-  },
-  {
-    id: 4,
-    title: 'API REST Authentication',
-    category: 'API',
-    description: 'API REST sécurisée avec authentification JWT, gestion des rôles et documentation Swagger.',
-    fullDescription: 'API REST complète développée avec Node.js et Express. Elle inclut un système d\'authentification JWT, gestion des rôles et permissions, validation des données, rate limiting, et une documentation Swagger complète. Déployée avec Docker et tests automatisés.',
-    technologies: ['Node.js', 'Express', 'JWT', 'PostgreSQL', 'Swagger', 'Docker'],
-    image: null,
-    demoUrl: 'https://api.example.com/docs',
-    githubUrl: 'https://github.com/johndoe/api-auth',
-    date: '2024-09-10'
-  },
-  {
-    id: 5,
-    title: 'Portfolio Website',
-    category: 'Web App',
-    description: 'Site portfolio moderne et responsive avec système de blog intégré et optimisations SEO.',
-    fullDescription: 'Site portfolio personnel développé avec Nuxt.js. Il inclut un système de blog intégré, des optimisations SEO avancées, un mode sombre, des animations fluides, et un système de contact avec validation. Hébergé sur Vercel avec un CMS headless.',
-    technologies: ['Nuxt.js', 'Vue.js', 'Tailwind CSS', 'Markdown', 'Vercel'],
-    image: null,
-    demoUrl: 'https://portfolio.example.com',
-    githubUrl: 'https://github.com/johndoe/portfolio',
-    date: '2024-08-25'
-  },
-  {
-    id: 6,
-    title: 'Vue Component Library',
-    category: 'Open Source',
-    description: 'Bibliothèque de composants Vue.js réutilisables avec Storybook et tests unitaires complets.',
-    fullDescription: 'Une bibliothèque complète de composants Vue.js réutilisables. Développée avec TypeScript, elle inclut plus de 50 composants, des tests unitaires avec Vitest, une documentation Storybook, et est publiée sur npm. Utilisée dans plusieurs projets en production.',
-    technologies: ['Vue.js', 'TypeScript', 'Storybook', 'Vitest', 'Rollup', 'CSS Variables'],
-    image: null,
-    demoUrl: 'https://components.example.com',
-    githubUrl: 'https://github.com/johndoe/vue-components',
-    date: '2024-07-12'
-  }
-]
+const supabase = useSupabase()
+
+// Charger les projets
+const recentProjects = ref([])
+const loadProjects = async () => {
+  const { data } = await supabase
+    .from('projects')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(3)
+  recentProjects.value = data || []
+}
+
+// Charger les skills
+const detailedSkills = ref([])
+const loadSkills = async () => {
+  const { data } = await supabase
+    .from('skills')
+    .select('*')
+    .order('order', { ascending: true })
+  detailedSkills.value = data || []
+}
+
+onMounted(() => {
+  loadProjects()
+  loadSkills()
+})
 
 // Computed
 const filteredProjects = computed(() => {
