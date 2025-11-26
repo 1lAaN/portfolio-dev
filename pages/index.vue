@@ -5,9 +5,9 @@
     <section id="home" class="hero-section">
       <div class="container">
         <div class="hero-content">
-          <h1 class="hero-title">Ihlane Ambroise</h1>
+          <h1 class="hero-title">Bonjour ! Je suis Ihlane et je suis développeur junior</h1>
           <p class="hero-subtitle">
-            Développeur Full Stack spécialisé dans la création d'expériences digitales modernes et performantes
+            Jeune developpeur web passionné, je crée des expériences digitales innovantes et performantes.
           </p>
           <div class="hero-actions">
             <button @click="scrollToSection('projects')" class="btn-primary">
@@ -32,8 +32,8 @@
               Je combine expertise technique et sens du design pour créer des solutions digitales qui font la différence.
             </p>
             <p>
-              Spécialisé en Vue.js, Nuxt.js et Node.js, j'accompagne les entreprises dans leur transformation digitale 
-              en développant des applications performantes et intuitives.
+              Mon objectif est de transformer des idées innovantes en applications web performantes et intuitives, 
+              tout en assurant une expérience utilisateur optimale.
             </p>
           </div>
           
@@ -74,7 +74,7 @@
         <div class="section-header">
           <h2 class="section-title">Projets récents</h2>
           <p class="section-subtitle">
-            Découvrez mes dernières réalisations, des applications web aux solutions digitales complètes
+            Découvrez mes dernières réalisations ! 
           </p>
         </div>
 
