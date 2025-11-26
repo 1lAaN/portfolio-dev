@@ -1,202 +1,166 @@
 <template>
-  <div class="group relative bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100">
-    <!-- Image du projet -->
-    <div class="relative h-48 overflow-hidden bg-gray-100">
-      <img 
-        v-if="project.image_url"
-        :src="project.image_url" 
-        :alt="project.title"
-        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        loading="lazy"
+  <div
+    class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 hover:shadow-lg transition-all group cursor-pointer"
+    @click="$emit('click', project)"
+    @mouseenter="startAutoSlide"
+    @mouseleave="stopAutoSlide"
+  >
+    <!-- Carrousel d'images -->
+    <div class="relative h-48 bg-gray-200 overflow-hidden">
+      <!-- Images -->
+      <div
+        v-if="projectImages.length > 0"
+        class="relative w-full h-full"
       >
-      <div 
-        v-else
-        class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200"
-      >
-        <Icon name="mdi:image-outline" class="w-12 h-12 text-gray-400" />
-      </div>
-      
-      <!-- Overlay au hover -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      
-      <!-- Actions rapides -->
-      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <div class="flex space-x-3">
-          <UI-Button
-            v-if="project.demo_url"
-            :href="project.demo_url"
-            external
-            variant="primary"
-            size="sm"
-            icon-left="mdi:eye"
-          >
-            Démo
-          </UI-Button>
-          <UI-Button
-            v-if="project.github_url"
-            :href="project.github_url"
-            external
-            variant="outline"
-            size="sm"
-            icon-left="mdi:github"
-            class="bg-white/90 backdrop-blur"
-          >
-            Code
-          </UI-Button>
-        </div>
+        <img
+          v-for="(image, index) in projectImages"
+          :key="index"
+          :src="image"
+          :alt="`${project.title} - Image ${index + 1}`"
+          class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+          :class="{
+            'opacity-100': index === currentImageIndex,
+            'opacity-0': index !== currentImageIndex
+          }"
+        >
+        
+        <!-- Effet de zoom au hover -->
+        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all"></div>
       </div>
 
-      <!-- Badge de statut -->
-      <div class="absolute top-3 left-3">
-        <span 
-          class="px-2 py-1 text-xs font-medium rounded-full backdrop-blur"
-          :class="statusClasses"
-        >
-          {{ project.status || 'En cours' }}
+      <!-- Pas d'image -->
+      <div v-else class="flex items-center justify-center h-full">
+        <Icon name="mdi:image" class="h-16 w-16 text-gray-400" />
+      </div>
+      
+      <!-- Badge catégorie -->
+      <div class="absolute top-4 right-4">
+        <span class="px-3 py-1 bg-black text-white text-xs font-medium rounded-full">
+          {{ project.category }}
+        </span>
+      </div>
+
+      <!-- Indicateurs de pagination (si plusieurs images) -->
+      <div
+        v-if="projectImages.length > 1"
+        class="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-1.5"
+      >
+        <div
+          v-for="(_, index) in projectImages"
+          :key="index"
+          class="h-1.5 rounded-full transition-all duration-300"
+          :class="{
+            'w-6 bg-white': index === currentImageIndex,
+            'w-1.5 bg-white bg-opacity-50': index !== currentImageIndex
+          }"
+        ></div>
+      </div>
+
+      <!-- Compteur d'images -->
+      <div
+        v-if="projectImages.length > 1"
+        class="absolute top-4 left-4"
+      >
+        <span class="px-2 py-1 bg-black bg-opacity-70 text-white text-xs font-medium rounded">
+          <Icon name="mdi:image-multiple" class="inline h-3 w-3 mr-1" />
+          {{ projectImages.length }}
         </span>
       </div>
     </div>
 
     <!-- Contenu -->
     <div class="p-6">
-      <!-- Header -->
-      <div class="flex items-start justify-between mb-3">
-        <h3 class="font-semibold text-gray-900 text-lg group-hover:text-blue-600 transition-colors line-clamp-2">
-          {{ project.title }}
-        </h3>
-        <time 
-          v-if="project.created_at"
-          class="text-sm text-gray-500 ml-2 flex-shrink-0"
-          :datetime="project.created_at"
-        >
-          {{ formatDate(project.created_at) }}
-        </time>
-      </div>
-
-      <!-- Description -->
-      <p class="text-gray-600 text-sm mb-4 line-clamp-3">
-        {{ project.description || 'Description du projet...' }}
+      <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-black">
+        {{ project.title }}
+      </h3>
+      <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+        {{ project.description }}
       </p>
 
       <!-- Technologies -->
-      <div class="flex flex-wrap gap-2 mb-4" v-if="project.technologies && project.technologies.length > 0">
-        <span 
-          v-for="tech in displayTechnologies" 
+      <div class="flex flex-wrap gap-2 mb-4">
+        <span
+          v-for="tech in project.technologies?.slice(0, 3)"
           :key="tech"
-          class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-md font-medium"
+          class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
         >
           {{ tech }}
         </span>
-        <span 
-          v-if="project.technologies.length > maxTechDisplay"
-          class="px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded-md"
+        <span
+          v-if="project.technologies?.length > 3"
+          class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
         >
-          +{{ project.technologies.length - maxTechDisplay }}
+          +{{ project.technologies.length - 3 }}
         </span>
       </div>
 
-      <!-- Footer avec actions -->
-      <div class="flex items-center justify-between pt-2 border-t border-gray-50">
-        <div class="flex space-x-3">
-          <button 
-            v-if="project.demo_url"
-            @click="openLink(project.demo_url)"
-            class="text-blue-600 hover:text-blue-700 text-sm font-medium inline-flex items-center transition-colors"
-          >
-            <Icon name="mdi:external-link" class="w-4 h-4 mr-1" />
-            Voir
-          </button>
-          <button 
-            v-if="project.github_url"
-            @click="openLink(project.github_url)"
-            class="text-gray-600 hover:text-gray-700 text-sm font-medium inline-flex items-center transition-colors"
-          >
-            <Icon name="mdi:github" class="w-4 h-4 mr-1" />
-            Code
-          </button>
-        </div>
-
-        <button 
-          @click="$emit('view-details', project)"
-          class="text-blue-600 hover:text-blue-700 text-sm font-medium inline-flex items-center transition-colors"
+      <!-- Statut -->
+      <div class="flex items-center justify-between">
+        <span
+          :class="[
+            'px-2 py-1 text-xs font-medium rounded',
+            project.status === 'Terminé' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+          ]"
         >
-          Détails
-          <Icon name="mdi:arrow-right" class="w-4 h-4 ml-1" />
-        </button>
+          {{ project.status }}
+        </span>
+        <span class="text-sm text-gray-500 group-hover:text-black transition-colors">
+          Voir plus →
+        </span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-// Props
 const props = defineProps({
   project: {
     type: Object,
-    required: true,
-    default: () => ({})
-  },
-  maxTechDisplay: {
-    type: Number,
-    default: 4
+    required: true
   }
 })
 
-// Émissions
-const emit = defineEmits(['view-details'])
+defineEmits(['click'])
 
-// Computed
-const statusClasses = computed(() => {
-  const status = props.project.status?.toLowerCase()
-  
-  const classes = {
-    'terminé': 'bg-green-100 text-green-800',
-    'en cours': 'bg-blue-100 text-blue-800',
-    'en pause': 'bg-yellow-100 text-yellow-800',
-    'archivé': 'bg-gray-100 text-gray-800'
+// Gérer les images (nouveau format ou ancien)
+const projectImages = computed(() => {
+  if (props.project.images && props.project.images.length > 0) {
+    return props.project.images
+  } else if (props.project.image_url) {
+    return [props.project.image_url]
   }
-  
-  return classes[status] || 'bg-blue-100 text-blue-800'
+  return []
 })
 
-const displayTechnologies = computed(() => {
-  if (!props.project.technologies || !Array.isArray(props.project.technologies)) {
-    return []
-  }
-  return props.project.technologies.slice(0, props.maxTechDisplay)
-})
+// Carrousel automatique au hover
+const currentImageIndex = ref(0)
+let slideInterval = null
 
-// Méthodes
-const formatDate = (date) => {
-  if (!date) return ''
+const startAutoSlide = () => {
+  if (projectImages.value.length <= 1) return
   
-  const options = { 
-    year: 'numeric', 
-    month: 'short',
-    day: 'numeric'
-  }
-  
-  return new Date(date).toLocaleDateString('fr-FR', options)
+  slideInterval = setInterval(() => {
+    currentImageIndex.value = (currentImageIndex.value + 1) % projectImages.value.length
+  }, 1500) // Change toutes les 1.5 secondes
 }
 
-const openLink = (url) => {
-  if (url) {
-    window.open(url, '_blank', 'noopener,noreferrer')
+const stopAutoSlide = () => {
+  if (slideInterval) {
+    clearInterval(slideInterval)
+    slideInterval = null
   }
+  currentImageIndex.value = 0 // Retour à la première image
 }
+
+onBeforeUnmount(() => {
+  stopAutoSlide()
+})
 </script>
 
 <style scoped>
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

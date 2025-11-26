@@ -46,67 +46,8 @@
         />
       </div>
 
-      <!-- Upload image -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Image du projet
-        </label>
-
-        <!-- Aperçu de l'image actuelle -->
-        <div v-if="form.image_url" class="mb-3">
-          <div class="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
-            <img
-              :src="form.image_url"
-              alt="Aperçu"
-              class="w-full h-full object-cover"
-            >
-            <button
-              type="button"
-              @click="removeImage"
-              class="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700"
-            >
-              <Icon name="mdi:delete" class="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Zone d'upload -->
-        <div
-          v-else
-          class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors"
-        >
-          <input
-            ref="fileInput"
-            type="file"
-            accept="image/*"
-            @change="handleFileSelect"
-            class="hidden"
-          >
-          
-          <Icon name="mdi:cloud-upload" class="h-12 w-12 mx-auto text-gray-400 mb-3" />
-          
-          <button
-            type="button"
-            @click="$refs.fileInput.click()"
-            :disabled="uploading"
-            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-          >
-            {{ uploading ? 'Upload en cours...' : 'Choisir une image' }}
-          </button>
-          
-          <p class="mt-2 text-xs text-gray-500">
-            PNG, JPG, WEBP jusqu'à 10MB
-          </p>
-        </div>
-
-        <!-- Barre de progression -->
-        <div v-if="uploading" class="mt-3">
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="bg-black h-2 rounded-full transition-all duration-300" style="width: 75%"></div>
-          </div>
-          <p class="text-sm text-gray-500 mt-1">Upload en cours...</p>
-        </div>
-      </div>
+      <!-- Gestionnaire d'images -->
+      <AdminImageManager v-model="form.images" />
 
       <!-- Technologies -->
       <div>
@@ -142,11 +83,6 @@
         <div v-else class="mt-1 text-sm text-gray-500">
           Chargement des catégories...
         </div>
-        <p class="mt-1 text-xs text-gray-500">
-          <NuxtLink to="/admin/categories" class="text-blue-600 hover:underline">
-            Gérer les catégories
-          </NuxtLink>
-        </p>
       </div>
 
       <!-- Statut -->
@@ -206,7 +142,7 @@
         </button>
         <button
           type="submit"
-          :disabled="loading || uploading"
+          :disabled="loading"
           class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 disabled:opacity-50"
         >
           {{ loading ? 'Enregistrement...' : (isEditing ? 'Mettre à jour' : 'Créer') }}
@@ -226,11 +162,9 @@ const props = defineProps({
 
 const emit = defineEmits(['success', 'cancel'])
 const supabase = useSupabase()
-const { uploadImage } = useCloudinary()
 
 const isEditing = computed(() => !!props.project)
 const loading = ref(false)
-const uploading = ref(false)
 const categories = ref([])
 
 // Formulaire
@@ -243,13 +177,13 @@ const form = ref({
   status: 'En cours',
   demo_url: '',
   github_url: '',
-  image_url: ''
+  images: [], // Nouveau : tableau d'images
+  image_url: '' // Garde pour compatibilité (sera auto-rempli)
 })
 
-// Input pour les technologies (string)
 const technologiesInput = ref('')
 
-// Charger les catégories depuis la BDD
+// Charger les catégories
 const loadCategories = async () => {
   try {
     const { data, error } = await supabase
@@ -264,14 +198,17 @@ const loadCategories = async () => {
       form.value.category = categories.value[0].name
     }
   } catch (error) {
-    console.error('Erreur lors du chargement des catégories:', error)
+    console.error('Erreur chargement catégories:', error)
   }
 }
 
-// Initialiser le formulaire si on édite
+// Initialiser le formulaire
 watch(() => props.project, (newProject) => {
   if (newProject) {
-    form.value = { ...newProject }
+    form.value = {
+      ...newProject,
+      images: newProject.images || (newProject.image_url ? [newProject.image_url] : [])
+    }
     technologiesInput.value = newProject.technologies?.join(', ') || ''
   } else {
     form.value = {
@@ -283,45 +220,12 @@ watch(() => props.project, (newProject) => {
       status: 'En cours',
       demo_url: '',
       github_url: '',
+      images: [],
       image_url: ''
     }
     technologiesInput.value = ''
   }
 }, { immediate: true })
-
-// Gérer la sélection d'un fichier
-const handleFileSelect = async (event) => {
-  const file = event.target.files[0]
-  if (!file) return
-
-  // Vérifier le type
-  if (!file.type.startsWith('image/')) {
-    alert('Veuillez sélectionner une image')
-    return
-  }
-
-  // Vérifier la taille (10MB max)
-  if (file.size > 10 * 1024 * 1024) {
-    alert('L\'image est trop grande (max 10MB)')
-    return
-  }
-
-  try {
-    uploading.value = true
-    const result = await uploadImage(file)
-    form.value.image_url = result.url
-  } catch (error) {
-    console.error('Erreur upload:', error)
-    alert('Erreur lors de l\'upload de l\'image')
-  } finally {
-    uploading.value = false
-  }
-}
-
-// Supprimer l'image
-const removeImage = () => {
-  form.value.image_url = ''
-}
 
 const handleSubmit = async () => {
   loading.value = true
@@ -333,8 +237,10 @@ const handleSubmit = async () => {
       .map(t => t.trim())
       .filter(t => t)
 
+    // La première image devient image_url (pour compatibilité)
+    form.value.image_url = form.value.images.length > 0 ? form.value.images[0] : ''
+
     if (isEditing.value) {
-      // Mise à jour
       const { error } = await supabase
         .from('projects')
         .update(form.value)
@@ -342,7 +248,6 @@ const handleSubmit = async () => {
 
       if (error) throw error
     } else {
-      // Création
       const { error } = await supabase
         .from('projects')
         .insert([form.value])
@@ -359,7 +264,6 @@ const handleSubmit = async () => {
   }
 }
 
-// Charger les catégories au montage
 onMounted(() => {
   loadCategories()
 })
