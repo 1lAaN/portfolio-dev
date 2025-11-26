@@ -12,7 +12,7 @@ export default defineNuxtConfig({
           href: 'https://fonts.googleapis.com'
         },
         {
-          rel: 'preconnect', 
+          rel: 'preconnect',
           href: 'https://fonts.gstatic.com',
           crossorigin: ''
         },
@@ -25,8 +25,13 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
+      // Supabase
       supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
-      supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_KEY
+      supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_KEY,
+
+      // Cloudinary
+      cloudinaryCloudName: process.env.NUXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      cloudinaryUploadPreset: process.env.NUXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
     }
-  }
+  },
 })
