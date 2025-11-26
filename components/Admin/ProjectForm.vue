@@ -60,22 +60,31 @@
         >
       </div>
 
-      <!-- Catégorie -->
+      <!-- Catégorie (DYNAMIQUE) -->
       <div>
         <label for="category" class="block text-sm font-medium text-gray-700">
-          Catégorie
+          Catégorie *
         </label>
         <select
+          v-if="categories.length > 0"
           id="category"
           v-model="form.category"
+          required
           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black"
         >
-          <option value="Web App">Web App</option>
-          <option value="E-commerce">E-commerce</option>
-          <option value="Mobile">Mobile</option>
-          <option value="API">API</option>
-          <option value="Open Source">Open Source</option>
+          <option value="">-- Sélectionner une catégorie --</option>
+          <option v-for="cat in categories" :key="cat.id" :value="cat.name">
+            {{ cat.name }}
+          </option>
         </select>
+        <div v-else class="mt-1 text-sm text-gray-500">
+          Chargement des catégories...
+        </div>
+        <p class="mt-1 text-xs text-gray-500">
+          <NuxtLink to="/admin/categories" class="text-blue-600 hover:underline">
+            Gérer les catégories
+          </NuxtLink>
+        </p>
       </div>
 
       <!-- Statut -->
@@ -175,6 +184,7 @@ const supabase = useSupabase()
 
 const isEditing = computed(() => !!props.project)
 const loading = ref(false)
+const categories = ref([])
 
 // Formulaire
 const form = ref({
@@ -182,7 +192,7 @@ const form = ref({
   description: '',
   full_description: '',
   technologies: [],
-  category: 'Web App',
+  category: '',
   status: 'En cours',
   demo_url: '',
   github_url: '',
@@ -192,11 +202,44 @@ const form = ref({
 // Input pour les technologies (string)
 const technologiesInput = ref('')
 
+// Charger les catégories depuis la BDD
+const loadCategories = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('order', { ascending: true })
+
+    if (error) throw error
+    categories.value = data || []
+    
+    // Si pas de catégorie sélectionnée et qu'on crée un nouveau projet, sélectionner la première
+    if (!isEditing.value && categories.value.length > 0 && !form.value.category) {
+      form.value.category = categories.value[0].name
+    }
+  } catch (error) {
+    console.error('Erreur lors du chargement des catégories:', error)
+  }
+}
+
 // Initialiser le formulaire si on édite
 watch(() => props.project, (newProject) => {
   if (newProject) {
     form.value = { ...newProject }
     technologiesInput.value = newProject.technologies?.join(', ') || ''
+  } else {
+    form.value = {
+      title: '',
+      description: '',
+      full_description: '',
+      technologies: [],
+      category: categories.value.length > 0 ? categories.value[0].name : '',
+      status: 'En cours',
+      demo_url: '',
+      github_url: '',
+      image_url: ''
+    }
+    technologiesInput.value = ''
   }
 }, { immediate: true })
 
@@ -235,4 +278,9 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
+
+// Charger les catégories au montage
+onMounted(() => {
+  loadCategories()
+})
 </script>

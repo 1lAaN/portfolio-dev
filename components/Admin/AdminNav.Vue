@@ -34,6 +34,14 @@
               <Icon name="mdi:tools" class="w-5 h-5 mr-2" />
               Skills
             </NuxtLink>
+            <NuxtLink
+              to="/admin/categories"
+              class="nav-link"
+              :class="{ 'nav-link-active': $route.path === '/admin/categories' }"
+            >
+              <Icon name="mdi:shape" class="w-5 h-5 mr-2" />
+              Catégories
+            </NuxtLink>
           </div>
         </div>
 

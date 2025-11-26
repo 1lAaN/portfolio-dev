@@ -1,197 +1,231 @@
-<!-- pages/projects/index.vue -->
 <template>
-  <div class="projects-page">
-    <!-- Header de la page -->
-    <section class="page-header">
-      <div class="container">
-        <div class="header-content">
-          <h1 class="page-title">Tous mes projets</h1>
-          <p class="page-subtitle">
+  <div class="min-h-screen bg-gray-50">
+    <!-- Hero Section -->
+    <section class="bg-white py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+          <h1 class="text-5xl font-bold text-gray-900 mb-6">
+            Tous mes projets
+          </h1>
+          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
             Découvrez l'ensemble de mes réalisations, des projets personnels aux collaborations professionnelles
           </p>
-          
-          <!-- Filtres -->
-          <div class="filters">
+        </div>
+      </div>
+    </section>
+
+    <!-- Filtres de catégories -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex flex-wrap gap-3 mb-12">
+        <!-- Filtres visibles -->
+        <button
+          v-for="category in visibleCategories"
+          :key="category"
+          @click="selectedCategory = category"
+          :class="[
+            'px-6 py-2 rounded-full font-medium transition-all duration-200',
+            selectedCategory === category
+              ? 'bg-black text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+          ]"
+        >
+          {{ category }}
+        </button>
+
+        <!-- Bouton "Afficher toutes les catégories" -->
+        <div v-if="hiddenCategories.length > 0" class="relative">
+          <button
+            @click="toggleAllCategories"
+            class="px-6 py-2 rounded-full font-medium transition-all duration-200 flex items-center bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+          >
+            Afficher toutes les catégories
+            <Icon 
+              :name="showAllCategories ? 'mdi:chevron-up' : 'mdi:chevron-down'" 
+              class="ml-2 h-5 w-5" 
+            />
+          </button>
+
+          <!-- Dropdown avec les catégories cachées -->
+          <div
+            v-if="showAllCategories"
+            class="absolute top-full left-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-10 min-w-[250px]"
+          >
             <button
-              v-for="category in categories"
+              v-for="category in hiddenCategories"
               :key="category"
-              @click="selectedCategory = category"
-              class="filter-btn"
-              :class="{ 'active': selectedCategory === category }"
+              @click="selectedCategory = category; showAllCategories = false"
+              :class="[
+                'w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors',
+                selectedCategory === category ? 'bg-gray-100 font-medium' : ''
+              ]"
             >
               {{ category }}
             </button>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- Grille des projets -->
-    <section class="projects-grid-section">
-      <div class="container">
-        <!-- Compteur de projets -->
-        <div class="projects-count">
-          <p>{{ filteredProjects.length }} projet{{ filteredProjects.length > 1 ? 's' : '' }} trouvé{{ filteredProjects.length > 1 ? 's' : '' }}</p>
-        </div>
+      <!-- Compteur de projets -->
+      <div class="text-center mb-8">
+        <p class="text-gray-600">
+          {{ filteredProjects.length }} projet{{ filteredProjects.length > 1 ? 's' : '' }} trouvé{{ filteredProjects.length > 1 ? 's' : '' }}
+        </p>
+      </div>
 
-        <!-- Grille -->
-        <div class="projects-grid">
-          <article
-            v-for="project in filteredProjects"
-            :key="project.id"
-            class="project-card"
-            @click="openProjectModal(project)"
-          >
-            <!-- Image -->
-            <div class="project-image">
-              <img
-                v-if="project.image_url"
-                :src="project.image_url"
-                :alt="project.title"
-                class="project-img"
+      <!-- Grille de projets -->
+      <div v-if="loading" class="text-center py-12">
+        <Icon name="mdi:loading" class="animate-spin h-8 w-8 mx-auto text-gray-400" />
+        <p class="mt-2 text-gray-500">Chargement des projets...</p>
+      </div>
+
+      <div v-else-if="filteredProjects.length === 0" class="text-center py-12">
+        <Icon name="mdi:folder-open-outline" class="h-16 w-16 mx-auto text-gray-400 mb-4" />
+        <p class="text-gray-500">Aucun projet trouvé dans cette catégorie</p>
+      </div>
+
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div
+          v-for="project in filteredProjects"
+          :key="project.id"
+          @click="openProjectModal(project)"
+          class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 hover:shadow-lg transition-all cursor-pointer group"
+        >
+          <!-- Image -->
+          <div class="relative h-48 bg-gray-200 overflow-hidden">
+            <img
+              v-if="project.image_url"
+              :src="project.image_url"
+              :alt="project.title"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            >
+            <div v-else class="flex items-center justify-center h-full">
+              <Icon name="mdi:image" class="h-16 w-16 text-gray-400" />
+            </div>
+            
+            <!-- Badge catégorie -->
+            <div class="absolute top-4 right-4">
+              <span class="px-3 py-1 bg-black text-white text-xs font-medium rounded-full">
+                {{ project.category }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Contenu -->
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-black">
+              {{ project.title }}
+            </h3>
+            <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+              {{ project.description }}
+            </p>
+
+            <!-- Technologies -->
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span
+                v-for="tech in project.technologies?.slice(0, 3)"
+                :key="tech"
+                class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
               >
-              <div v-else class="project-placeholder">
-                <Icon name="mdi:image-outline" class="placeholder-icon" />
-              </div>
-              
-              <!-- Overlay -->
-              <div class="project-overlay">
-                <div class="overlay-content">
-                  <button class="overlay-btn">
-                    <Icon name="mdi:eye" class="w-5 h-5" />
-                    Voir le projet
-                  </button>
-                </div>
-              </div>
+                {{ tech }}
+              </span>
+              <span
+                v-if="project.technologies?.length > 3"
+                class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+              >
+                +{{ project.technologies.length - 3 }}
+              </span>
             </div>
 
-            <!-- Contenu -->
-            <div class="project-content">
-              <div class="project-header">
-                <h3 class="project-title">{{ project.title }}</h3>
-                <span class="project-category">{{ project.category }}</span>
-              </div>
-              
-              <p class="project-description">{{ project.description }}</p>
-
-              <!-- Technologies -->
-              <div class="project-technologies">
-                <span
-                  v-for="tech in project.technologies?.slice(0, 4)"
-                  :key="tech"
-                  class="tech-tag"
-                >
-                  {{ tech }}
-                </span>
-                <span
-                  v-if="project.technologies?.length > 4"
-                  class="tech-more"
-                >
-                  +{{ project.technologies.length - 4 }}
-                </span>
-              </div>
-
-              <!-- Date et liens -->
-              <div class="project-footer">
-                <span class="project-date">{{ formatDate(project.created_at) }}</span>
-                <div class="project-links">
-                  <a
-                    v-if="project.demo_url"
-                    :href="project.demo_url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="project-link demo"
-                    @click.stop
-                  >
-                    <Icon name="mdi:external-link" class="w-4 h-4" />
-                  </a>
-                  <a
-                    v-if="project.github_url"
-                    :href="project.github_url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="project-link github"
-                    @click.stop
-                  >
-                    <Icon name="mdi:github" class="w-4 h-4" />
-                  </a>
-                </div>
-              </div>
+            <!-- Statut -->
+            <div class="flex items-center justify-between">
+              <span
+                :class="[
+                  'px-2 py-1 text-xs font-medium rounded',
+                  project.status === 'Terminé' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                ]"
+              >
+                {{ project.status }}
+              </span>
+              <span class="text-sm text-gray-500 group-hover:text-black transition-colors">
+                Voir plus →
+              </span>
             </div>
-          </article>
-        </div>
-
-        <!-- Message si aucun projet -->
-        <div v-if="filteredProjects.length === 0" class="no-projects">
-          <Icon name="mdi:folder-open-outline" class="no-projects-icon" />
-          <h3 class="no-projects-title">Aucun projet trouvé</h3>
-          <p class="no-projects-text">Essayez de changer de catégorie ou revenez plus tard !</p>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Modal détail projet -->
-    <div v-if="selectedProject" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <button class="modal-close" @click="closeModal">
-          <Icon name="mdi:close" class="w-6 h-6" />
-        </button>
-        
-        <div class="modal-header">
-          <h2 class="modal-title">{{ selectedProject.title }}</h2>
-          <span class="modal-category">{{ selectedProject.category }}</span>
-        </div>
-
-        <div class="modal-image">
+    <!-- Modal détails projet -->
+    <div
+      v-if="selectedProject"
+      @click.self="closeProjectModal"
+      class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+    >
+      <div class="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <!-- Image -->
+        <div class="relative h-64 bg-gray-200">
           <img
             v-if="selectedProject.image_url"
             :src="selectedProject.image_url"
             :alt="selectedProject.title"
-            class="modal-img"
+            class="w-full h-full object-cover"
           >
-          <div v-else class="modal-placeholder">
-            <Icon name="mdi:image-outline" class="w-16 h-16 text-gray-400" />
+          <div v-else class="flex items-center justify-center h-full">
+            <Icon name="mdi:image" class="h-20 w-20 text-gray-400" />
           </div>
+          
+          <!-- Bouton fermer -->
+          <button
+            @click="closeProjectModal"
+            class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100"
+          >
+            <Icon name="mdi:close" class="h-6 w-6" />
+          </button>
         </div>
 
-        <div class="modal-body">
-          <div class="modal-description">
-            <h3>Description</h3>
-            <p>{{ selectedProject.full_description || selectedProject.description }}</p>
+        <!-- Contenu -->
+        <div class="p-8">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-3xl font-bold text-gray-900">{{ selectedProject.title }}</h2>
+            <span class="px-3 py-1 bg-black text-white text-sm font-medium rounded-full">
+              {{ selectedProject.category }}
+            </span>
           </div>
 
-          <div class="modal-technologies">
-            <h3>Technologies utilisées</h3>
-            <div class="tech-list">
+          <p class="text-gray-600 mb-6">{{ selectedProject.full_description || selectedProject.description }}</p>
+
+          <!-- Technologies -->
+          <div class="mb-6">
+            <h3 class="text-sm font-medium text-gray-900 mb-3">Technologies utilisées</h3>
+            <div class="flex flex-wrap gap-2">
               <span
                 v-for="tech in selectedProject.technologies"
                 :key="tech"
-                class="tech-tag-modal"
+                class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded"
               >
                 {{ tech }}
               </span>
             </div>
           </div>
 
-          <div class="modal-actions">
+          <!-- Liens -->
+          <div class="flex gap-4">
             <a
               v-if="selectedProject.demo_url"
               :href="selectedProject.demo_url"
               target="_blank"
-              rel="noopener noreferrer"
-              class="modal-btn primary"
+              class="flex-1 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-black hover:bg-gray-800"
             >
-              <Icon name="mdi:external-link" class="w-5 h-5" />
+              <Icon name="mdi:open-in-new" class="h-5 w-5 mr-2" />
               Voir la démo
             </a>
             <a
               v-if="selectedProject.github_url"
               :href="selectedProject.github_url"
               target="_blank"
-              rel="noopener noreferrer"
-              class="modal-btn secondary"
+              class="flex-1 inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
-              <Icon name="mdi:github" class="w-5 h-5" />
+              <Icon name="mdi:github" class="h-5 w-5 mr-2" />
               Code source
             </a>
           </div>
@@ -204,558 +238,93 @@
 <script setup>
 // Configuration SEO
 useSeoMeta({
-  title: 'Tous mes projets - Portfolio Ihlane Ambroise',
+  title: 'Tous mes projets - Portfolio',
   description: 'Découvrez l\'ensemble de mes réalisations en développement web, des projets personnels aux collaborations professionnelles.',
 })
 
 const supabase = useSupabase()
 
-// État réactif
+// État
+const loading = ref(true)
 const selectedCategory = ref('Tous')
 const selectedProject = ref(null)
+const showAllCategories = ref(false)
 
-// Catégories
-const categories = ['Tous', 'Web App', 'E-commerce', 'Mobile', 'API', 'Open Source']
+// Catégories depuis la BDD
+const visibleCategories = ref(['Tous'])
+const hiddenCategories = ref([])
 
-// Charger tous les projets
+// Projets
 const allProjects = ref([])
-const loadProjects = async () => {
-  const { data } = await supabase
-    .from('projects')
-    .select('*')
-    .order('created_at', { ascending: false })
-  
-  allProjects.value = data || []
+
+// Charger les catégories depuis la BDD
+const loadCategories = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('display_order', { ascending: true })
+
+    if (error) throw error
+    
+    // Séparer les catégories visibles et cachées
+    const visible = data?.filter(c => c.visible_in_filters).map(c => c.name) || []
+    const hidden = data?.filter(c => !c.visible_in_filters).map(c => c.name) || []
+    
+    visibleCategories.value = ['Tous', ...visible]
+    hiddenCategories.value = hidden
+    
+    console.log('✅ Catégories chargées depuis la BDD:', { visible, hidden })
+  } catch (error) {
+    console.error('❌ Erreur lors du chargement des catégories:', error)
+  }
 }
 
-onMounted(() => {
-  loadProjects()
-})
+// Charger tous les projets
+const loadProjects = async () => {
+  loading.value = true
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    allProjects.value = data || []
+    
+    console.log('✅ Projets chargés:', allProjects.value.length)
+  } catch (error) {
+    console.error('❌ Erreur lors du chargement des projets:', error)
+  } finally {
+    loading.value = false
+  }
+}
 
-// Computed
+// Projets filtrés
 const filteredProjects = computed(() => {
   if (selectedCategory.value === 'Tous') {
     return allProjects.value
   }
-  return allProjects.value.filter(project => project.category === selectedCategory.value)
+  return allProjects.value.filter(p => p.category === selectedCategory.value)
 })
 
-// Méthodes
-const formatDate = (dateString) => {
-  if (!dateString) return ''
-  const options = { year: 'numeric', month: 'long' }
-  return new Date(dateString).toLocaleDateString('fr-FR', options)
-}
-
+// Modal
 const openProjectModal = (project) => {
   selectedProject.value = project
-  document.body.style.overflow = 'hidden'
 }
 
-const closeModal = () => {
+const closeProjectModal = () => {
   selectedProject.value = null
-  document.body.style.overflow = 'auto'
 }
 
-// Cleanup
-onUnmounted(() => {
-  document.body.style.overflow = 'auto'
+// Basculer dropdown
+const toggleAllCategories = () => {
+  showAllCategories.value = !showAllCategories.value
+}
+
+// Charger au montage
+onMounted(() => {
+  loadCategories()
+  loadProjects()
 })
 </script>
-
-<style scoped>
-.projects-page {
-  --color-primary: #000000;
-  --color-secondary: #ffffff;
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  
-  font-family: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
-  min-height: 100vh;
-  background-color: var(--color-secondary);
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-@media (min-width: 640px) {
-  .container {
-    padding: 0 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    padding: 0 2rem;
-  }
-}
-
-/* Header */
-.page-header {
-  padding: 6rem 0 4rem;
-  background-color: var(--color-gray-50);
-}
-
-.header-content {
-  text-align: center;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.page-title {
-  font-size: 3rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--color-primary);
-}
-
-@media (min-width: 768px) {
-  .page-title {
-    font-size: 3.5rem;
-  }
-}
-
-.page-subtitle {
-  font-size: 1.125rem;
-  color: var(--color-gray-600);
-  margin-bottom: 3rem;
-  line-height: 1.6;
-}
-
-/* Filtres */
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.filter-btn {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  background-color: var(--color-secondary);
-  color: var(--color-gray-600);
-  border: 1px solid var(--color-gray-300);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.filter-btn:hover {
-  background-color: var(--color-gray-50);
-  color: var(--color-primary);
-}
-
-.filter-btn.active {
-  background-color: var(--color-primary);
-  color: var(--color-secondary);
-  border-color: var(--color-primary);
-}
-
-/* Section grille */
-.projects-grid-section {
-  padding: 4rem 0;
-}
-
-.projects-count {
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.projects-count p {
-  color: var(--color-gray-600);
-  font-size: 0.875rem;
-}
-
-/* Grille */
-.projects-grid {
-  display: grid;
-  gap: 2rem;
-}
-
-@media (min-width: 768px) {
-  .projects-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .projects-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* Cards */
-.project-card {
-  background-color: var(--color-secondary);
-  border: 1px solid var(--color-gray-200);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.project-card:hover {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.project-image {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  background-color: var(--color-gray-100);
-  overflow: hidden;
-}
-
-.project-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.project-card:hover .project-img {
-  transform: scale(1.05);
-}
-
-.project-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.placeholder-icon {
-  width: 3rem;
-  height: 3rem;
-  color: var(--color-gray-600);
-}
-
-.project-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.project-card:hover .project-overlay {
-  opacity: 1;
-}
-
-.overlay-content {
-  text-align: center;
-}
-
-.overlay-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background-color: var(--color-secondary);
-  color: var(--color-primary);
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.overlay-btn:hover {
-  background-color: var(--color-primary);
-  color: var(--color-secondary);
-}
-
-/* Contenu card */
-.project-content {
-  padding: 1.5rem;
-}
-
-.project-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 0.75rem;
-}
-
-.project-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-primary);
-  line-height: 1.2;
-}
-
-.project-category {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  background-color: var(--color-gray-100);
-  color: var(--color-gray-700);
-  white-space: nowrap;
-}
-
-.project-description {
-  color: var(--color-gray-600);
-  font-size: 0.875rem;
-  line-height: 1.5;
-  margin-bottom: 1rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.project-technologies {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.tech-tag {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  background-color: var(--color-gray-100);
-  color: var(--color-gray-700);
-  font-weight: 500;
-}
-
-.tech-more {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  background-color: var(--color-gray-200);
-  color: var(--color-gray-600);
-  font-weight: 500;
-}
-
-.project-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-gray-100);
-}
-
-.project-date {
-  font-size: 0.875rem;
-  color: var(--color-gray-600);
-}
-
-.project-links {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.project-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  color: var(--color-gray-600);
-  transition: all 0.2s;
-}
-
-.project-link:hover {
-  color: var(--color-primary);
-  background-color: var(--color-gray-50);
-}
-
-/* No projects */
-.no-projects {
-  text-align: center;
-  padding: 4rem 2rem;
-}
-
-.no-projects-icon {
-  width: 4rem;
-  height: 4rem;
-  margin: 0 auto 1rem;
-  color: var(--color-gray-600);
-}
-
-.no-projects-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--color-primary);
-}
-
-.no-projects-text {
-  color: var(--color-gray-600);
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.modal-content {
-  background: var(--color-secondary);
-  max-width: 800px;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-  width: 100%;
-}
-
-.modal-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 10;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.modal-close:hover {
-  background: rgba(0, 0, 0, 0.7);
-}
-
-.modal-header {
-  padding: 2rem 2rem 1rem;
-}
-
-.modal-title {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: var(--color-primary);
-}
-
-.modal-category {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  background-color: var(--color-gray-100);
-  color: var(--color-gray-700);
-}
-
-.modal-image {
-  aspect-ratio: 16 / 9;
-  background-color: var(--color-gray-100);
-  overflow: hidden;
-}
-
-.modal-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.modal-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-body {
-  padding: 2rem;
-}
-
-.modal-description {
-  margin-bottom: 2rem;
-}
-
-.modal-description h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: var(--color-primary);
-}
-
-.modal-description p {
-  color: var(--color-gray-600);
-  line-height: 1.6;
-}
-
-.modal-technologies {
-  margin-bottom: 2rem;
-}
-
-.modal-technologies h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: var(--color-primary);
-}
-
-.tech-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.tech-tag-modal {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  background-color: var(--color-gray-100);
-  color: var(--color-gray-700);
-  font-weight: 500;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.modal-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  font-weight: 500;
-  text-decoration: none;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.modal-btn.primary {
-  background-color: var(--color-primary);
-  color: var(--color-secondary);
-}
-
-.modal-btn.primary:hover {
-  background-color: var(--color-gray-800);
-}
-
-.modal-btn.secondary {
-  border: 1px solid var(--color-gray-300);
-  color: var(--color-gray-700);
-}
-
-.modal-btn.secondary:hover {
-  background-color: var(--color-gray-50);
-}
-</style>
