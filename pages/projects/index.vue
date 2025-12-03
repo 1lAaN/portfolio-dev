@@ -83,155 +83,22 @@
         <p class="text-gray-500">Aucun projet trouvé dans cette catégorie</p>
       </div>
 
+      <!-- Grille de projets avec ProjectCard -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div
+        <PortfolioProjectCard
           v-for="project in filteredProjects"
           :key="project.id"
+          :project="project"
           @click="openProjectModal(project)"
-          class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 hover:shadow-lg transition-all cursor-pointer group"
-        >
-          <!-- Image -->
-          <div class="relative h-48 bg-gray-200 overflow-hidden">
-            <img
-              v-if="project.image_url"
-              :src="project.image_url"
-              :alt="project.title"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            >
-            <div v-else class="flex items-center justify-center h-full">
-              <Icon name="mdi:image" class="h-16 w-16 text-gray-400" />
-            </div>
-            
-            <!-- Badge catégorie -->
-            <div class="absolute top-4 right-4">
-              <span class="px-3 py-1 bg-black text-white text-xs font-medium rounded-full">
-                {{ project.category }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Contenu -->
-          <div class="p-6">
-            <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-black">
-              {{ project.title }}
-            </h3>
-            <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-              {{ project.description }}
-            </p>
-
-            <!-- Technologies -->
-            <div class="flex flex-wrap gap-2 mb-4">
-              <span
-                v-for="tech in project.technologies?.slice(0, 3)"
-                :key="tech"
-                class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
-              >
-                {{ tech }}
-              </span>
-              <span
-                v-if="project.technologies?.length > 3"
-                class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
-              >
-                +{{ project.technologies.length - 3 }}
-              </span>
-            </div>
-
-            <!-- Statut -->
-            <div class="flex items-center justify-between">
-              <span
-                :class="[
-                  'px-2 py-1 text-xs font-medium rounded',
-                  project.status === 'Terminé' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                ]"
-              >
-                {{ project.status }}
-              </span>
-              <span class="text-sm text-gray-500 group-hover:text-black transition-colors">
-                Voir plus →
-              </span>
-            </div>
-          </div>
-        </div>
+        />
       </div>
     </section>
 
-    <!-- Modal détails projet -->
-    <div
-      v-if="selectedProject"
-      @click.self="closeProjectModal"
-      class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-    >
-      <div class="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <!-- Image -->
-        <div class="relative h-64 bg-gray-200">
-          <img
-            v-if="selectedProject.image_url"
-            :src="selectedProject.image_url"
-            :alt="selectedProject.title"
-            class="w-full h-full object-cover"
-          >
-          <div v-else class="flex items-center justify-center h-full">
-            <Icon name="mdi:image" class="h-20 w-20 text-gray-400" />
-          </div>
-          
-          <!-- Bouton fermer -->
-          <button
-            @click="closeProjectModal"
-            class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100"
-          >
-            <Icon name="mdi:close" class="h-6 w-6" />
-          </button>
-        </div>
-
-        <!-- Contenu -->
-        <div class="p-8">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-3xl font-bold text-gray-900">{{ selectedProject.title }}</h2>
-            <span class="px-3 py-1 bg-black text-white text-sm font-medium rounded-full">
-              {{ selectedProject.category }}
-            </span>
-          </div>
-
-          <p class="text-gray-600 mb-6">{{ selectedProject.full_description || selectedProject.description }}</p>
-
-          <!-- Technologies -->
-          <div class="mb-6">
-            <h3 class="text-sm font-medium text-gray-900 mb-3">Technologies utilisées</h3>
-            <div class="flex flex-wrap gap-2">
-              <span
-                v-for="tech in selectedProject.technologies"
-                :key="tech"
-                class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded"
-              >
-                {{ tech }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Liens -->
-          <div class="flex gap-4">
-            <a
-              v-if="selectedProject.demo_url"
-              :href="selectedProject.demo_url"
-              target="_blank"
-              class="flex-1 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-black hover:bg-gray-800"
-            >
-              <Icon name="mdi:open-in-new" class="h-5 w-5 mr-2" />
-              Voir la démo
-            </a>
-            <a
-              v-if="selectedProject.github_url"
-              :href="selectedProject.github_url"
-              target="_blank"
-              class="flex-1 inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <Icon name="mdi:github" class="h-5 w-5 mr-2" />
-              Code source
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Modal détails projet avec carrousel -->
+    <PortfolioProjectModal
+      :project="selectedProject"
+      @close="closeProjectModal"
+    />
   </div>
 </template>
 
