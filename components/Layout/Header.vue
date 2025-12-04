@@ -4,7 +4,9 @@
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
         <div class="flex-shrink-0">
-          <span class="text-xl font-bold">Portfolio</span>
+          <NuxtLink to="/" class="text-xl font-bold hover:text-gray-700 transition-colors">
+            Portfolio
+          </NuxtLink>
         </div>
 
         <!-- Navigation desktop - CENTREE -->
@@ -13,7 +15,7 @@
             <button
               v-for="item in navigation"
               :key="item.name"
-              @click="scrollToSection(item.href)"
+              @click="handleNavigation(item)"
               class="nav-btn"
             >
               {{ item.name }}
@@ -59,11 +61,23 @@ const router = useRouter()
 const route = useRoute()
 
 const navigation = [
-  { name: 'Accueil', href: 'home' },
-  { name: 'À propos', href: 'about' },
-  { name: 'Projets', href: 'projects' },
-  { name: 'Contact', href: 'contact' }
+  { name: 'Accueil', href: 'home', type: 'scroll' },
+  { name: 'À propos', href: 'about', type: 'scroll' },
+  { name: 'Projets', href: 'projects', type: 'scroll' },
+  { name: 'Veille Techno', href: '/veille', type: 'link' },
+  { name: 'Synthèse', href: '/synthese', type: 'link' },
+  { name: 'Contact', href: 'contact', type: 'scroll' }
 ]
+
+const handleNavigation = async (item) => {
+  if (item.type === 'link') {
+    // Navigation vers une page
+    await navigateTo(item.href)
+  } else {
+    // Scroll vers section
+    await scrollToSection(item.href)
+  }
+}
 
 const scrollToSection = async (sectionId) => {
   // Si on est sur la page projects, redirige vers l'accueil

@@ -42,6 +42,22 @@
               <Icon name="mdi:shape" class="w-5 h-5 mr-2" />
               Catégories
             </NuxtLink>
+            <NuxtLink
+              to="/admin/veille"
+              class="nav-link"
+              :class="{ 'nav-link-active': $route.path === '/admin/veille' }"
+            >
+              <Icon name="mdi:newspaper-variant" class="w-5 h-5 mr-2" />
+              Veille
+            </NuxtLink>
+            <NuxtLink
+              to="/admin/documents"
+              class="nav-link"
+              :class="{ 'nav-link-active': $route.path === '/admin/documents' }"
+            >
+              <Icon name="mdi:file-document" class="w-5 h-5 mr-2" />
+              Documents
+            </NuxtLink>
           </div>
         </div>
 
