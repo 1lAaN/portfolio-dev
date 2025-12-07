@@ -63,7 +63,7 @@ const route = useRoute()
 const navigation = [
   { name: 'Accueil', href: 'home', type: 'scroll' },
   { name: 'À propos', href: 'about', type: 'scroll' },
-  { name: 'Projets', href: 'projects', type: 'scroll' },
+  { name: 'Projets', href: 'projets', type: 'scroll' },
   { name: 'Veille Techno', href: '/veille', type: 'link' },
   { name: 'Synthèse', href: '/synthese', type: 'link' },
   { name: 'Contact', href: 'contact', type: 'scroll' }
