@@ -50,25 +50,95 @@
             <Icon name="mdi:rss" class="h-16 w-16 mx-auto text-blue-600 mb-4" />
             <h4 class="text-lg font-medium text-gray-900 mb-2">Prêt à synchroniser</h4>
             <p class="text-sm text-gray-600 mb-6">
-              {{ feeds.length }} sources RSS seront consultées pour trouver de nouveaux articles sur le cloud gaming.
+              Choisissez le mode de synchronisation pour trouver de nouveaux articles sur le cloud gaming.
             </p>
             
-            <!-- Liste des sources -->
+            <!-- Choix du mode -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+              <button
+                @click="syncMode = 'quick'"
+                :class="[
+                  'p-4 border-2 rounded-lg text-left transition-all',
+                  syncMode === 'quick' 
+                    ? 'border-black bg-gray-50' 
+                    : 'border-gray-200 hover:border-gray-300'
+                ]"
+              >
+                <div class="flex items-center mb-2">
+                  <Icon name="mdi:flash" class="h-5 w-5 mr-2" />
+                  <span class="font-medium">Rapide</span>
+                </div>
+                <p class="text-xs text-gray-600">Sources officielles uniquement ({{ directFeeds.length }} sources)</p>
+                <p class="text-xs text-gray-500 mt-1">~30 secondes</p>
+              </button>
+
+              <button
+                @click="syncMode = 'full'"
+                :class="[
+                  'p-4 border-2 rounded-lg text-left transition-all',
+                  syncMode === 'full' 
+                    ? 'border-black bg-gray-50' 
+                    : 'border-gray-200 hover:border-gray-300'
+                ]"
+              >
+                <div class="flex items-center mb-2">
+                  <Icon name="mdi:earth" class="h-5 w-5 mr-2" />
+                  <span class="font-medium">Complète</span>
+                </div>
+                <p class="text-xs text-gray-600">Toutes les sources + recherche par mots-clés</p>
+                <p class="text-xs text-gray-500 mt-1">~2-3 minutes</p>
+              </button>
+            </div>
+
+            <!-- Détails des sources -->
             <div class="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-              <p class="text-sm font-medium text-gray-700 mb-2">Sources :</p>
-              <ul class="space-y-1 text-xs text-gray-600">
-                <li v-for="feed in feeds" :key="feed.url" class="flex items-center">
-                  <Icon name="mdi:check-circle" class="h-4 w-4 text-green-600 mr-2" />
-                  {{ feed.name }}
-                </li>
-              </ul>
+              <div v-if="syncMode === 'quick'">
+                <p class="text-sm font-medium text-gray-700 mb-2">Sources officielles :</p>
+                <ul class="space-y-1 text-xs text-gray-600">
+                  <li v-for="feed in directFeeds" :key="feed.url" class="flex items-center">
+                    <Icon name="mdi:check-circle" class="h-4 w-4 text-green-600 mr-2" />
+                    {{ feed.name }}
+                  </li>
+                </ul>
+              </div>
+              
+              <div v-else>
+                <p class="text-sm font-medium text-gray-700 mb-2">Sources complètes :</p>
+                <div class="space-y-3">
+                  <div>
+                    <p class="text-xs font-medium text-gray-600 mb-1">Flux RSS officiels ({{ directFeeds.length }}) :</p>
+                    <ul class="space-y-1 text-xs text-gray-600 ml-4">
+                      <li v-for="feed in directFeeds.slice(0, 3)" :key="feed.url" class="flex items-center">
+                        <Icon name="mdi:check-circle" class="h-3 w-3 text-green-600 mr-2" />
+                        {{ feed.name }}
+                      </li>
+                      <li class="text-gray-500">+ {{ directFeeds.length - 3 }} autres...</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="text-xs font-medium text-gray-600 mb-1">Recherche Google News ({{ keywords.length }} mots-clés) :</p>
+                    <div class="flex flex-wrap gap-1 ml-4">
+                      <span 
+                        v-for="keyword in keywords.slice(0, 5)" 
+                        :key="keyword"
+                        class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded"
+                      >
+                        {{ keyword }}
+                      </span>
+                      <span class="px-2 py-0.5 bg-gray-200 text-gray-600 text-xs rounded">
+                        +{{ keywords.length - 5 }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <button
               @click="startSync"
               class="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 font-medium"
             >
-              Démarrer la synchronisation
+              {{ syncMode === 'quick' ? 'Synchronisation rapide' : 'Synchronisation complète' }}
             </button>
           </div>
 
@@ -99,7 +169,7 @@
             </div>
 
             <!-- Statistiques globales -->
-            <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="grid grid-cols-4 gap-4 mb-6">
               <div class="bg-green-50 rounded-lg p-4 text-center">
                 <p class="text-2xl font-bold text-green-600">{{ syncResults.totalSuccess }}</p>
                 <p class="text-xs text-green-800">Ajoutés</p>
@@ -107,6 +177,10 @@
               <div class="bg-gray-50 rounded-lg p-4 text-center">
                 <p class="text-2xl font-bold text-gray-600">{{ syncResults.totalSkipped }}</p>
                 <p class="text-xs text-gray-800">Ignorés</p>
+              </div>
+              <div class="bg-blue-50 rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-blue-600">{{ syncResults.totalFiltered }}</p>
+                <p class="text-xs text-blue-800">Filtrés</p>
               </div>
               <div class="bg-red-50 rounded-lg p-4 text-center">
                 <p class="text-2xl font-bold text-red-600">{{ syncResults.totalErrors }}</p>
@@ -399,7 +473,7 @@ definePageMeta({
 })
 
 const supabase = useSupabase()
-const { feeds, syncAllFeeds } = useRSSFeed()
+const { feeds, directFeeds, keywords, quickSync, fullSync } = useRSSFeed()
 
 const articles = ref([])
 const loadingList = ref(true)
@@ -412,6 +486,7 @@ const showSyncModal = ref(false)
 const syncing = ref(false)
 const syncLogs = ref([])
 const syncResults = ref(null)
+const syncMode = ref('quick') // 'quick' ou 'full'
 
 const isEditing = computed(() => !!editingArticle.value)
 
@@ -555,7 +630,14 @@ const startSync = async () => {
   }
 
   try {
-    const results = await syncAllFeeds(onProgress)
+    let results
+    
+    if (syncMode.value === 'quick') {
+      results = await quickSync(onProgress)
+    } else {
+      results = await fullSync(onProgress)
+    }
+    
     syncResults.value = results
   } catch (error) {
     console.error('Erreur sync:', error)
