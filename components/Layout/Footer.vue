@@ -68,6 +68,16 @@
           Contact
         </button>
       </li>
+      <li>
+        <NuxtLink to="/veille" class="text-sm text-gray-600 hover:text-gray-900 transition-colors no-underline"> 
+          Veille Techno
+        </NuxtLink>
+      </li>
+      <li>
+        <NuxtLink to="/synthese" class="text-sm text-gray-600 hover:text-gray-900 transition-colors no-underline"> 
+          Synthèse
+        </NuxtLink>
+      </li>
     </ul>
   </div>
           
@@ -144,5 +154,10 @@ button {
   padding: 0;
   cursor: pointer;
   font: inherit;
+}
+
+/* Pour que les liens NuxtLink ne soient pas soulignés */
+a {
+  text-decoration: none;
 }
 </style>

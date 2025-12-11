@@ -5,10 +5,10 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div class="text-center">
           <h1 class="text-6xl font-bold text-gray-900 mb-6">
-            Développeur Full-Stack
+            Bonjour, je suis Ihlane
           </h1>
           <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            Je crée des applications web modernes et performantes avec les dernières technologies
+            Développeur junior en 2eme année de BTS SIO SLAM
           </p>
           <div class="flex justify-center gap-4">
             <a
