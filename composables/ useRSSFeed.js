@@ -14,8 +14,7 @@ export const useRSSFeed = () => {
     'PlayStation Plus Premium',
     'Amazon Luna',
     'Shadow PC',
-    'Stadia',
-    'streaming jeux video'
+    'Google Stadia'
   ]
 
   /* ----------------------------------------------------------
@@ -23,29 +22,46 @@ export const useRSSFeed = () => {
   ---------------------------------------------------------- */
   const directFeeds = [
     {
-      name: 'NVIDIA GeForce NOW',
+      name: 'NVIDIA GeForce NOW Blog',
       url: 'https://blogs.nvidia.com/blog/category/gaming/feed/',
-      tags: ['nvidia', 'geforce-now', 'streaming']
+      tags: ['nvidia', 'geforce-now', 'streaming'],
+      cloudGamingOnly: false // Filtre les articles non-cloud gaming
     },
     {
       name: 'Xbox Wire',
       url: 'https://news.xbox.com/en-us/feed/',
-      tags: ['xbox', 'microsoft', 'xcloud']
+      tags: ['xbox', 'microsoft', 'xcloud'],
+      cloudGamingOnly: false // Filtre les articles non-cloud gaming
     },
     {
       name: 'PlayStation Blog',
       url: 'https://blog.playstation.com/feed/',
-      tags: ['playstation', 'sony', 'ps-plus']
+      tags: ['playstation', 'sony', 'ps-plus'],
+      cloudGamingOnly: false // Filtre les articles non-cloud gaming
     },
     {
       name: 'The Verge Gaming',
       url: 'https://www.theverge.com/rss/gaming/index.xml',
-      tags: ['actualites', 'technologie']
+      tags: ['actualites', 'technologie'],
+      cloudGamingOnly: false // Filtre les articles non-cloud gaming
     },
     {
       name: 'IGN Tech',
       url: 'https://www.ign.com/articles?tags=tech&feed=rss',
-      tags: ['actualites', 'gaming']
+      tags: ['actualites', 'gaming'],
+      cloudGamingOnly: false // Filtre les articles non-cloud gaming
+    },
+    {
+      name: 'Cloud Gaming News - Reddit',
+      url: 'https://www.reddit.com/r/cloudygamer/.rss',
+      tags: ['reddit', 'cloud-gaming', 'communaute'],
+      cloudGamingOnly: true // Tous les articles sont OK (déjà du cloud gaming)
+    },
+    {
+      name: 'Cloud Gaming Report',
+      url: 'https://cloud-gaming.com/feed/',
+      tags: ['cloud-gaming', 'actualites', 'industrie'],
+      cloudGamingOnly: true // Tous les articles sont OK (déjà du cloud gaming)
     }
   ]
 
@@ -126,30 +142,85 @@ export const useRSSFeed = () => {
   }
 
   /* ----------------------------------------------------------
-    📌 8. Filtrage des faux positifs pour les recherches
+    📌 8. Filtrage STRICT des articles cloud gaming
   ---------------------------------------------------------- */
   const isRelevantToCloudGaming = (article) => {
     const text = `${article.title} ${article.description}`.toLowerCase()
 
-    const mustHaveKeywords = [
+    // Mots-clés OBLIGATOIRES - au moins un doit être présent
+    const cloudGamingKeywords = [
       'cloud gaming',
       'game streaming',
-      'streaming',
       'geforce now',
+      'geforcenow',
       'xcloud',
+      'xbox cloud gaming',
       'xbox cloud',
-      'playstation plus',
-      'luna',
-      'shadow',
-      'stadia'
+      'playstation plus premium',
+      'playstation premium',
+      'ps plus premium',
+      'ps premium',
+      'amazon luna',
+      'shadow pc',
+      'shadow.tech',
+      'google stadia',
+      'streaming de jeux',
+      'jeux en streaming',
+      'cloud games',
+      'jeu en cloud',
+      'remote gaming',
+      'jeux à distance',
+      'stream',
+      'streamer des jeux'
     ]
 
-    const hasRelevantKeyword = mustHaveKeywords.some(k => text.includes(k))
+    const hasCloudGamingKeyword = cloudGamingKeywords.some(k => text.includes(k))
 
-    const excludeKeywords = ['podcast', 'recrutement', 'emploi', 'carriere']
+    // Si aucun mot-clé cloud gaming trouvé, rejeter immédiatement
+    if (!hasCloudGamingKeyword) return false
+
+    // Mots-clés à EXCLURE (même si contient un mot-clé cloud gaming)
+    const excludeKeywords = [
+      'podcast',
+      'recrutement',
+      'emploi',
+      'carriere',
+      'formation',
+      'cours en ligne',
+      'webinar',
+      'conference',
+      'investment',
+      'stock price',
+      'action',
+      'crypto',
+      // Exclure articles sur du gaming local
+      'download',
+      'telecharger',
+      'installer',
+      'physical copy',
+      'copie physique',
+      'disc version',
+      'version disque',
+      // Nouveaux jeux PS Plus SANS cloud
+      'jeux gratuits du mois',
+      'free games of',
+      'monthly games',
+      'essential tier', // PS Plus Essential = pas de cloud
+      'extra tier' // PS Plus Extra = pas de cloud non plus
+    ]
+
     const hasExcludedKeyword = excludeKeywords.some(k => text.includes(k))
 
-    return hasRelevantKeyword && !hasExcludedKeyword
+    // Pour PlayStation, accepter UNIQUEMENT si mentionne explicitement Premium ou Cloud
+    if (text.includes('playstation') || text.includes('ps plus') || text.includes('ps+')) {
+      const isPremiumOrCloud = text.includes('premium') || 
+                               text.includes('cloud') || 
+                               text.includes('streaming')
+      if (!isPremiumOrCloud) return false
+    }
+
+    // Article valide si : contient mot-clé cloud gaming ET pas de mot exclu
+    return !hasExcludedKeyword
   }
 
   /* ----------------------------------------------------------
@@ -189,9 +260,18 @@ export const useRSSFeed = () => {
 
       for (const item of items) {
         try {
-          // Filtrage si recherche par mot-clé
+          // FILTRAGE STRICT pour les recherches par mot-clé
+          // Les flux directs marqués cloudGamingOnly passent toujours
           if (feed.isKeywordSearch && !isRelevantToCloudGaming(item)) {
             filteredCount++
+            onProgress?.(`⏭️ Filtré (hors sujet): ${item.title.substring(0, 60)}...`)
+            continue
+          }
+
+          // Pour les flux officiels NON cloud gaming only, filtrer aussi
+          if (!feed.cloudGamingOnly && !feed.isKeywordSearch && !isRelevantToCloudGaming(item)) {
+            filteredCount++
+            onProgress?.(`⏭️ Filtré (hors cloud gaming): ${item.title.substring(0, 60)}...`)
             continue
           }
 
@@ -288,7 +368,7 @@ export const useRSSFeed = () => {
     syncAllFeeds(onProgress, { includeDirectFeeds: true, includeKeywordFeeds: true })
 
   /* ----------------------------------------------------------
-    📌 13. Retour (à l’intérieur de la fonction, PAS top-level)
+    📌 13. Retour
   ---------------------------------------------------------- */
   return {
     feeds,

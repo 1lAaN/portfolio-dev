@@ -225,7 +225,7 @@ definePageMeta({
 })
 
 const supabase = useSupabase()
-const { uploadImage } = useCloudinary() // On réutilise uploadImage pour les PDFs
+const { uploadImage } = useCloudinary()
 const documents = ref([])
 const loadingList = ref(true)
 const loading = ref(false)
@@ -253,7 +253,8 @@ const loadDocuments = async () => {
     if (error) throw error
     documents.value = data || []
   } catch (error) {
-    console.error('Erreur:', error)
+    console.error('Erreur chargement documents:', error)
+    alert('Erreur lors du chargement des documents')
   } finally {
     loadingList.value = false
   }
@@ -264,13 +265,17 @@ const handleFileSelect = async (event) => {
   const file = event.target.files[0]
   if (!file) return
 
+  // Vérifier que c'est un PDF
   if (!file.type.includes('pdf')) {
     alert('Seuls les fichiers PDF sont acceptés')
+    event.target.value = ''
     return
   }
 
+  // Vérifier la taille
   if (file.size > 10 * 1024 * 1024) {
     alert('Le fichier est trop volumineux (max 10MB)')
+    event.target.value = ''
     return
   }
 
@@ -285,16 +290,20 @@ const handleFileSelect = async (event) => {
       }
     }, 200)
 
-    const result = await uploadImage(file) // Cloudinary accepte les PDFs aussi
+    // Upload vers Cloudinary (accepte aussi les PDFs)
+    const result = await uploadImage(file)
     
     clearInterval(interval)
     uploadProgress.value = 100
 
+    // Mettre à jour le formulaire
     form.value.file_url = result.url
     form.value.file_size = file.size
+
+    console.log('✅ PDF uploadé avec succès:', result.url)
   } catch (error) {
-    console.error('Erreur upload:', error)
-    alert('Erreur lors de l\'upload')
+    console.error('❌ Erreur upload:', error)
+    alert('Erreur lors de l\'upload du fichier. Veuillez réessayer.')
   } finally {
     uploading.value = false
     uploadProgress.value = 0
@@ -302,61 +311,104 @@ const handleFileSelect = async (event) => {
   }
 }
 
-// Submit
+// Submit formulaire
 const handleSubmit = async () => {
+  // Validation
+  if (!form.value.name || !form.value.file_url) {
+    alert('Veuillez remplir tous les champs obligatoires')
+    return
+  }
+
   loading.value = true
 
   try {
+    // Préparer les données
+    const documentData = {
+      name: form.value.name,
+      type: form.value.type,
+      description: form.value.description || '',
+      file_url: form.value.file_url,
+      file_size: form.value.file_size
+    }
+
     if (editingDoc.value) {
+      // Mise à jour
+      console.log('Mise à jour du document:', editingDoc.value.id, documentData)
+      
       const { error } = await supabase
         .from('documents')
-        .update(form.value)
+        .update(documentData)
         .eq('id', editingDoc.value.id)
 
       if (error) throw error
+      
+      console.log('✅ Document mis à jour')
+      alert('Document mis à jour avec succès !')
     } else {
+      // Création
+      console.log('Création d\'un nouveau document:', documentData)
+      
       const { error } = await supabase
         .from('documents')
-        .insert([form.value])
+        .insert([documentData])
 
       if (error) throw error
+      
+      console.log('✅ Document créé')
+      alert('Document créé avec succès !')
     }
 
+    // Réinitialiser et recharger
     handleCancel()
     await loadDocuments()
   } catch (error) {
-    console.error('Erreur:', error)
-    alert('Une erreur est survenue')
+    console.error('❌ Erreur lors de la sauvegarde:', error)
+    alert(`Erreur lors de la sauvegarde: ${error.message}`)
   } finally {
     loading.value = false
   }
 }
 
-// Éditer
+// Éditer un document
 const editDocument = (doc) => {
   editingDoc.value = doc
-  form.value = { ...doc }
+  form.value = {
+    name: doc.name,
+    type: doc.type,
+    description: doc.description || '',
+    file_url: doc.file_url,
+    file_size: doc.file_size
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-// Supprimer
+// Supprimer un document
 const deleteDocument = async (doc) => {
-  if (!confirm(`Supprimer "${doc.name}" ?`)) return
+  if (!confirm(`Êtes-vous sûr de vouloir supprimer "${doc.name}" ?`)) {
+    return
+  }
 
   try {
+    console.log('Suppression du document:', doc.id)
+    
     const { error } = await supabase
       .from('documents')
       .delete()
       .eq('id', doc.id)
 
     if (error) throw error
+    
+    console.log('✅ Document supprimé')
+    alert('Document supprimé avec succès !')
+    
     await loadDocuments()
   } catch (error) {
-    console.error('Erreur:', error)
-    alert('Erreur lors de la suppression')
+    console.error('❌ Erreur lors de la suppression:', error)
+    alert(`Erreur lors de la suppression: ${error.message}`)
   }
 }
 
+// Annuler l'édition
 const handleCancel = () => {
   editingDoc.value = null
   form.value = {
@@ -368,11 +420,13 @@ const handleCancel = () => {
   }
 }
 
+// Formater la date
 const formatDate = (date) => {
   if (!date) return ''
   return new Date(date).toLocaleDateString('fr-FR')
 }
 
+// Formater la taille
 const formatFileSize = (bytes) => {
   if (!bytes) return ''
   const sizes = ['o', 'Ko', 'Mo', 'Go']
@@ -380,6 +434,7 @@ const formatFileSize = (bytes) => {
   return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
 }
 
+// Charger au montage
 onMounted(() => {
   loadDocuments()
 })
