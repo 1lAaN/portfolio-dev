@@ -114,7 +114,7 @@ export const useRSSFeed = () => {
   }
 
   /* ----------------------------------------------------------
-    📌 6. Nettoyer le HTML des descriptions
+    📌 6. Nettoyer le HTML des descriptions ET les caractères spéciaux
   ---------------------------------------------------------- */
   const cleanDescription = (html) => {
     if (!html) return ''
@@ -122,23 +122,75 @@ export const useRSSFeed = () => {
     const temp = document.createElement('div')
     temp.innerHTML = html
 
-    const text = temp.textContent || temp.innerText || ''
-    return text.substring(0, 300).trim()
+    let text = temp.textContent || temp.innerText || ''
+    
+    // Nettoyer les caractères spéciaux HTML
+    text = text
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&rsquo;/g, "'")
+      .replace(/&lsquo;/g, "'")
+      .replace(/&rdquo;/g, '"')
+      .replace(/&ldquo;/g, '"')
+      .replace(/&#8217;/g, "'")
+      .replace(/&#8216;/g, "'")
+      .replace(/&#8220;/g, '"')
+      .replace(/&#8221;/g, '"')
+      .replace(/\s+/g, ' ') // Remplacer les espaces multiples par un seul
+      .trim()
+    
+    return text.substring(0, 300)
   }
 
   /* ----------------------------------------------------------
-    📌 7. Trouver l'image associée à un article
+    📌 7. Trouver l'image associée à un article (avec validation)
   ---------------------------------------------------------- */
   const extractImage = (item) => {
-    if (item.thumbnail) return item.thumbnail
-    if (item.enclosure?.link) return item.enclosure.link
+    // Essayer thumbnail en premier
+    if (item.thumbnail && isValidImageUrl(item.thumbnail)) {
+      return item.thumbnail
+    }
+    
+    // Essayer enclosure
+    if (item.enclosure?.link && isValidImageUrl(item.enclosure.link)) {
+      return item.enclosure.link
+    }
 
+    // Chercher dans le contenu HTML
     if (item.content) {
       const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/)
-      if (imgMatch) return imgMatch[1]
+      if (imgMatch && isValidImageUrl(imgMatch[1])) {
+        return imgMatch[1]
+      }
     }
 
     return null
+  }
+
+  // Valider qu'une URL d'image est accessible
+  const isValidImageUrl = (url) => {
+    if (!url) return false
+    
+    // Vérifier que c'est une URL valide
+    try {
+      new URL(url)
+    } catch {
+      return false
+    }
+    
+    // Vérifier que c'est une image (extensions courantes)
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']
+    const hasImageExtension = imageExtensions.some(ext => url.toLowerCase().includes(ext))
+    
+    // Accepter aussi les URLs sans extension si elles viennent de CDN d'images connus
+    const knownImageCDN = ['images.', 'img.', 'cdn.', 'media.', 'static.']
+    const isFromImageCDN = knownImageCDN.some(cdn => url.includes(cdn))
+    
+    return hasImageExtension || isFromImageCDN
   }
 
   /* ----------------------------------------------------------

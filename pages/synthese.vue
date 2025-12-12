@@ -25,7 +25,7 @@
         <Icon name="mdi:file-document-outline" class="h-16 w-16 mx-auto text-gray-400 mb-4" />
         <p class="text-gray-500 mb-4">Aucun tableau de synthèse disponible</p>
         <NuxtLink
-          to="/contact"
+          to="/#contact"
           class="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
         >
           Me contacter pour en savoir plus
@@ -35,7 +35,7 @@
       <div v-else>
         <!-- Info document -->
         <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center">
               <div class="bg-blue-100 rounded-lg p-3 mr-4">
                 <Icon name="mdi:file-pdf-box" class="h-8 w-8 text-blue-600" />
@@ -51,30 +51,68 @@
                 </p>
               </div>
             </div>
-            <a
-              :href="document.file_url"
-              download
-              class="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-            >
-              <Icon name="mdi:download" class="h-5 w-5 mr-2" />
-              Télécharger le PDF
-            </a>
+            <div class="flex gap-3">
+              <a
+                :href="document.file_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <Icon name="mdi:open-in-new" class="h-5 w-5 mr-2" />
+                Ouvrir
+              </a>
+              <a
+                :href="document.file_url"
+                :download="document.name + '.pdf'"
+                class="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                <Icon name="mdi:download" class="h-5 w-5 mr-2" />
+                Télécharger
+              </a>
+            </div>
           </div>
         </div>
 
-        <!-- Aperçu du PDF -->
+        <!-- Aperçu du PDF avec Google Docs Viewer -->
         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900">Aperçu du document</h3>
           </div>
           
-          <!-- Viewer PDF -->
+          <!-- Viewer PDF via Google Docs -->
           <div class="relative w-full" style="height: 800px;">
             <iframe
-              :src="`${document.file_url}#view=FitH`"
+              :src="`https://docs.google.com/viewer?url=${encodeURIComponent(document.file_url)}&embedded=true`"
               class="w-full h-full border-0"
               title="Aperçu du tableau de synthèse"
+              frameborder="0"
             />
+          </div>
+
+          <!-- Alternative : bouton pour ouvrir dans un nouvel onglet -->
+          <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <p class="text-sm text-gray-600 mb-3">
+              Le document ne s'affiche pas ? 
+            </p>
+            <div class="flex gap-3">
+              <a
+                :href="document.file_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+              >
+                <Icon name="mdi:open-in-new" class="h-4 w-4 mr-2" />
+                Ouvrir dans un nouvel onglet
+              </a>
+              <a
+                :href="document.file_url"
+                :download="document.name + '.pdf'"
+                class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+              >
+                <Icon name="mdi:download" class="h-4 w-4 mr-2" />
+                Télécharger le PDF
+              </a>
+            </div>
           </div>
         </div>
 
@@ -99,7 +137,7 @@
                   Voir mes projets
                 </NuxtLink>
                 <NuxtLink
-                  to="/contact"
+                  to="/#contact"
                   class="inline-flex items-center text-sm font-medium text-blue-900 hover:underline"
                 >
                   <Icon name="mdi:email" class="h-4 w-4 mr-1" />
@@ -136,10 +174,12 @@ const loadDocument = async () => {
       .limit(1)
       .single()
 
-    if (error && error.code !== 'PGRST116') throw error // PGRST116 = pas de résultat
+    if (error && error.code !== 'PGRST116') throw error
     document.value = data || null
+    
+    console.log('Document chargé:', data)
   } catch (error) {
-    console.error('Erreur:', error)
+    console.error('Erreur chargement document:', error)
   } finally {
     loading.value = false
   }
