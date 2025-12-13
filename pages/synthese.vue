@@ -1,210 +1,170 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Hero Section -->
-    <section class="bg-white py-20 border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <h1 class="text-5xl font-bold text-gray-900 mb-6">
-            Tableau de Synthèse
-          </h1>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-            Mon parcours, mes compétences et mes réalisations en un document
-          </p>
-        </div>
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <h1 class="text-3xl font-bold text-gray-900">Ma Synthèse de Stage</h1>
+        <p class="text-gray-600 mt-2">Découvrez mon parcours et mes réalisations</p>
       </div>
-    </section>
+    </header>
 
-    <!-- Contenu principal -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div v-if="loading" class="text-center py-12">
-        <Icon name="mdi:loading" class="animate-spin h-8 w-8 mx-auto text-gray-400" />
-        <p class="mt-2 text-gray-500">Chargement du document...</p>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-12">
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center py-20">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+        <p class="mt-4 text-gray-600">Chargement du document...</p>
       </div>
 
-      <div v-else-if="!document" class="text-center py-12 bg-white rounded-lg border border-gray-200">
-        <Icon name="mdi:file-document-outline" class="h-16 w-16 mx-auto text-gray-400 mb-4" />
-        <p class="text-gray-500 mb-4">Aucun tableau de synthèse disponible</p>
-        <NuxtLink
-          to="/#contact"
-          class="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+      <!-- Error State -->
+      <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <p class="text-red-800 font-semibold">{{ error }}</p>
+        <button 
+          @click="fetchDocument"
+          class="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
         >
-          Me contacter pour en savoir plus
-        </NuxtLink>
+          Réessayer
+        </button>
       </div>
 
-      <div v-else>
-        <!-- Info document -->
-        <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <div class="flex items-center justify-between flex-wrap gap-4">
-            <div class="flex items-center">
-              <div class="bg-blue-100 rounded-lg p-3 mr-4">
-                <Icon name="mdi:file-pdf-box" class="h-8 w-8 text-blue-600" />
-              </div>
-              <div>
-                <h2 class="text-xl font-bold text-gray-900">{{ document.name }}</h2>
-                <p class="text-sm text-gray-600">{{ document.description }}</p>
-                <p class="text-xs text-gray-500 mt-1">
-                  Mis à jour le {{ formatDate(document.updated_at) }}
-                  <span v-if="document.file_size">
-                    • {{ formatFileSize(document.file_size) }}
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div class="flex gap-3">
+      <!-- Document Display -->
+      <div v-else-if="document" class="space-y-8">
+        <!-- Document Info Card -->
+        <div class="bg-white rounded-lg shadow-lg p-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ document.title }}</h2>
+          <p v-if="document.description" class="text-gray-600 mb-4">{{ document.description }}</p>
+          <div class="flex items-center gap-2 text-sm text-gray-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>Publié le {{ formatDate(document.created_at) }}</span>
+          </div>
+        </div>
+
+        <!-- PDF Viewer -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div class="bg-gray-100 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+              <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+              </svg>
+              Aperçu du document
+            </h3>
+            <div class="flex gap-2">
               <a
-                :href="document.file_url"
+                :href="document.pdf_url"
                 target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
               >
-                <Icon name="mdi:open-in-new" class="h-5 w-5 mr-2" />
-                Ouvrir
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Ouvrir dans un nouvel onglet
               </a>
               <a
-                :href="document.file_url"
-                :download="document.name + '.pdf'"
-                class="inline-flex items-center px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                :href="document.pdf_url"
+                download
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 text-sm"
               >
-                <Icon name="mdi:download" class="h-5 w-5 mr-2" />
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
                 Télécharger
               </a>
             </div>
           </div>
-        </div>
 
-        <!-- Aperçu du PDF avec Google Docs Viewer -->
-        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div class="bg-gray-100 px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900">Aperçu du document</h3>
-          </div>
-          
-          <!-- Viewer PDF via Google Docs -->
-          <div class="relative w-full" style="height: 800px;">
+          <!-- PDF Iframe -->
+          <div class="relative bg-gray-50" style="height: 800px;">
             <iframe
-              :src="`https://docs.google.com/viewer?url=${encodeURIComponent(document.file_url)}&embedded=true`"
+              :src="document.pdf_url"
               class="w-full h-full border-0"
-              title="Aperçu du tableau de synthèse"
-              frameborder="0"
-            />
+              title="Aperçu PDF"
+            ></iframe>
           </div>
 
-          <!-- Alternative : bouton pour ouvrir dans un nouvel onglet -->
+          <!-- Fallback message -->
           <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
-            <p class="text-sm text-gray-600 mb-3">
-              Le document ne s'affiche pas ? 
+            <p class="text-sm text-gray-600 text-center">
+              Si le document ne s'affiche pas correctement, 
+              <a :href="document.pdf_url" target="_blank" class="text-blue-600 hover:underline font-medium">
+                cliquez ici pour l'ouvrir dans un nouvel onglet
+              </a>
+              ou téléchargez-le.
             </p>
-            <div class="flex gap-3">
-              <a
-                :href="document.file_url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-              >
-                <Icon name="mdi:open-in-new" class="h-4 w-4 mr-2" />
-                Ouvrir dans un nouvel onglet
-              </a>
-              <a
-                :href="document.file_url"
-                :download="document.name + '.pdf'"
-                class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-              >
-                <Icon name="mdi:download" class="h-4 w-4 mr-2" />
-                Télécharger le PDF
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Informations complémentaires -->
-        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div class="flex">
-            <Icon name="mdi:information" class="h-6 w-6 text-blue-600 mr-3 flex-shrink-0" />
-            <div>
-              <h3 class="text-lg font-semibold text-blue-900 mb-2">
-                À propos de ce document
-              </h3>
-              <p class="text-blue-800 mb-3">
-                Ce tableau de synthèse regroupe l'ensemble de mon parcours professionnel, 
-                mes compétences techniques et mes principales réalisations.
-              </p>
-              <div class="flex gap-4">
-                <NuxtLink
-                  to="/projects"
-                  class="inline-flex items-center text-sm font-medium text-blue-900 hover:underline"
-                >
-                  <Icon name="mdi:folder-multiple" class="h-4 w-4 mr-1" />
-                  Voir mes projets
-                </NuxtLink>
-                <NuxtLink
-                  to="/#contact"
-                  class="inline-flex items-center text-sm font-medium text-blue-900 hover:underline"
-                >
-                  <Icon name="mdi:email" class="h-4 w-4 mr-1" />
-                  Me contacter
-                </NuxtLink>
-              </div>
-            </div>
           </div>
         </div>
       </div>
-    </section>
+
+      <!-- No Document State -->
+      <div v-else class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+        <svg class="w-12 h-12 text-yellow-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p class="text-yellow-800 font-semibold">Aucun document disponible pour le moment</p>
+        <p class="text-yellow-700 text-sm mt-2">La synthèse de stage sera bientôt disponible.</p>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-20">
+      <div class="max-w-7xl mx-auto px-4 py-6 text-center text-gray-600 text-sm">
+        <p>&copy; 2024 - Synthèse de Stage</p>
+      </div>
+    </footer>
   </div>
 </template>
 
 <script setup>
-useSeoMeta({
-  title: 'Tableau de Synthèse - Portfolio',
-  description: 'Consultez et téléchargez mon tableau de synthèse professionnel avec mon parcours et mes compétences',
-})
-
 const supabase = useSupabase()
-const loading = ref(true)
-const document = ref(null)
 
-// Charger le document
-const loadDocument = async () => {
+// État
+const document = ref(null)
+const loading = ref(true)
+const error = ref(null)
+
+// Récupérer le document le plus récent
+const fetchDocument = async () => {
   loading.value = true
+  error.value = null
+
   try {
-    const { data, error } = await supabase
+    const { data, error: fetchError } = await supabase
       .from('documents')
       .select('*')
-      .eq('type', 'synthese')
-      .order('updated_at', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(1)
       .single()
 
-    if (error && error.code !== 'PGRST116') throw error
-    document.value = data || null
-    
-    console.log('Document chargé:', data)
-  } catch (error) {
-    console.error('Erreur chargement document:', error)
+    if (fetchError) {
+      if (fetchError.code === 'PGRST116') {
+        // Aucun document trouvé
+        document.value = null
+      } else {
+        throw fetchError
+      }
+    } else {
+      document.value = data
+    }
+  } catch (err) {
+    console.error('Erreur lors du chargement du document:', err)
+    error.value = 'Impossible de charger le document. Veuillez réessayer.'
   } finally {
     loading.value = false
   }
 }
 
 // Formater la date
-const formatDate = (date) => {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('fr-FR', {
-    day: 'numeric',
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('fr-FR', {
+    year: 'numeric',
     month: 'long',
-    year: 'numeric'
+    day: 'numeric'
   })
 }
 
-// Formater la taille du fichier
-const formatFileSize = (bytes) => {
-  if (!bytes) return ''
-  const sizes = ['octets', 'Ko', 'Mo', 'Go']
-  if (bytes === 0) return '0 octet'
-  const i = Math.floor(Math.log(bytes) / Math.log(1024))
-  return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
-}
-
+// Charger le document au montage
 onMounted(() => {
-  loadDocument()
+  fetchDocument()
 })
 </script>

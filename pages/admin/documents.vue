@@ -1,214 +1,142 @@
 <template>
-  <div>
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Gestion des documents</h1>
-      <p class="mt-2 text-gray-600">Gérez votre tableau de synthèse et autres documents PDF</p>
-    </div>
+  <div class="min-h-screen bg-gray-50 p-8">
+    <div class="max-w-7xl mx-auto">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Gestion des Documents</h1>
+        <p class="text-gray-600 mt-2">Téléchargez et gérez vos documents PDF</p>
+      </div>
 
-    <!-- Upload de document -->
-    <div class="mb-8 bg-white shadow-sm rounded-lg border border-gray-200 p-6">
-      <h3 class="text-lg font-medium text-gray-900 mb-6">
-        {{ editingDoc ? 'Modifier le document' : 'Ajouter un document' }}
-      </h3>
-
-      <form @submit.prevent="handleSubmit" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Nom -->
+      <!-- Upload Section -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Ajouter un document</h2>
+        
+        <form @submit.prevent="handleSubmit" class="space-y-4">
+          <!-- Titre -->
           <div>
-            <label for="name" class="block text-sm font-medium text-gray-700">
-              Nom du document *
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Titre du document *
             </label>
             <input
-              id="name"
-              v-model="form.name"
+              v-model="formData.title"
               type="text"
               required
-              placeholder="Tableau de synthèse 2024"
-              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black"
-            >
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Ex: Synthèse de stage 2024"
+            />
           </div>
 
-          <!-- Type -->
+          <!-- Description -->
           <div>
-            <label for="type" class="block text-sm font-medium text-gray-700">
-              Type *
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Description
             </label>
-            <select
-              id="type"
-              v-model="form.type"
-              required
-              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black"
-            >
-              <option value="synthese">Tableau de synthèse</option>
-              <option value="cv">CV</option>
-              <option value="autre">Autre</option>
-            </select>
+            <textarea
+              v-model="formData.description"
+              rows="3"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Description du document..."
+            ></textarea>
           </div>
-        </div>
 
-        <!-- Description -->
-        <div>
-          <label for="description" class="block text-sm font-medium text-gray-700">
-            Description
-          </label>
-          <textarea
-            id="description"
-            v-model="form.description"
-            rows="2"
-            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black"
-          />
-        </div>
-
-        <!-- Upload PDF -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-3">
-            Fichier PDF *
-          </label>
-          
-          <!-- Zone d'upload -->
-          <div v-if="!form.file_url" class="relative">
-            <input
-              ref="fileInput"
-              type="file"
-              accept=".pdf,application/pdf"
-              @change="handleFileSelect"
-              class="hidden"
-            >
-            
-            <button
-              type="button"
-              @click="$refs.fileInput.click()"
-              :disabled="uploading"
-              class="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-gray-400 transition-colors flex flex-col items-center justify-center"
-            >
-              <Icon name="mdi:file-pdf-box" class="h-12 w-12 text-gray-400 mb-3" />
-              <span class="text-sm text-gray-600">
-                {{ uploading ? 'Upload en cours...' : 'Cliquez pour sélectionner un PDF' }}
+          <!-- Upload PDF -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Fichier PDF *
+            </label>
+            <div class="flex items-center gap-4">
+              <input
+                ref="fileInput"
+                type="file"
+                accept="application/pdf"
+                @change="handleFileSelect"
+                class="block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-lg file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-blue-700
+                  hover:file:bg-blue-100
+                  cursor-pointer"
+              />
+              <span v-if="selectedFile" class="text-sm text-green-600">
+                ✓ {{ selectedFile.name }}
               </span>
-              <span class="text-xs text-gray-500 mt-1">Maximum 10MB</span>
-            </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">
+              Taille maximale: 10MB
+            </p>
           </div>
 
-          <!-- PDF sélectionné -->
-          <div v-else class="border-2 border-green-200 bg-green-50 rounded-lg p-4 flex items-center justify-between">
-            <div class="flex items-center">
-              <Icon name="mdi:file-pdf-box" class="h-8 w-8 text-green-600 mr-3" />
-              <div>
-                <p class="text-sm font-medium text-green-900">PDF chargé avec succès</p>
-                <a :href="form.file_url" target="_blank" class="text-xs text-green-700 hover:underline">
-                  Voir le fichier →
-                </a>
-              </div>
-            </div>
+          <!-- Bouton Submit -->
+          <div class="flex items-center gap-4">
             <button
-              type="button"
-              @click="form.file_url = ''"
-              class="text-red-600 hover:text-red-800"
+              type="submit"
+              :disabled="isUploading || !formData.title || !selectedFile"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              <Icon name="mdi:close" class="h-5 w-5" />
+              {{ isUploading ? 'Upload en cours...' : 'Ajouter le document' }}
             </button>
-          </div>
-
-          <!-- Barre de progression -->
-          <div v-if="uploading" class="mt-3">
-            <div class="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                class="bg-black h-2 rounded-full transition-all duration-300"
-                :style="{ width: uploadProgress + '%' }"
-              ></div>
-            </div>
-            <p class="text-sm text-gray-500 mt-1">Upload... {{ uploadProgress }}%</p>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-          <button
-            v-if="editingDoc"
-            type="button"
-            @click="handleCancel"
-            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Annuler
-          </button>
-          <button
-            type="submit"
-            :disabled="loading || !form.file_url"
-            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 disabled:opacity-50"
-          >
-            {{ loading ? 'Enregistrement...' : (editingDoc ? 'Mettre à jour' : 'Créer') }}
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Liste des documents -->
-    <div class="bg-white shadow-sm rounded-lg border border-gray-200">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-medium text-gray-900">Documents existants</h3>
-      </div>
-
-      <div v-if="loadingList" class="p-8 text-center">
-        <Icon name="mdi:loading" class="animate-spin h-8 w-8 mx-auto text-gray-400" />
-        <p class="mt-2 text-gray-500">Chargement...</p>
-      </div>
-
-      <div v-else-if="documents.length === 0" class="p-8 text-center">
-        <Icon name="mdi:file-document-outline" class="h-12 w-12 mx-auto mb-3 text-gray-400" />
-        <p class="text-gray-500">Aucun document trouvé</p>
-      </div>
-
-      <div v-else class="divide-y divide-gray-200">
-        <div
-          v-for="doc in documents"
-          :key="doc.id"
-          class="p-6 hover:bg-gray-50 transition-colors"
-        >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center flex-1">
-              <div class="flex-shrink-0 bg-blue-100 rounded-lg p-3 mr-4">
-                <Icon name="mdi:file-pdf-box" class="h-8 w-8 text-blue-600" />
+            
+            <div v-if="uploadProgress > 0 && uploadProgress < 100" class="flex-1">
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  :style="{ width: uploadProgress + '%' }"
+                ></div>
               </div>
+              <p class="text-sm text-gray-600 mt-1">{{ uploadProgress }}%</p>
+            </div>
+          </div>
+
+          <!-- Message de succès/erreur -->
+          <div v-if="message.text" :class="[
+            'p-4 rounded-lg',
+            message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+          ]">
+            {{ message.text }}
+          </div>
+        </form>
+      </div>
+
+      <!-- Liste des documents -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">Documents existants</h2>
+
+        <div v-if="loading" class="text-center py-8">
+          <p class="text-gray-500">Chargement...</p>
+        </div>
+
+        <div v-else-if="documents.length === 0" class="text-center py-8">
+          <p class="text-gray-500">Aucun document pour le moment</p>
+        </div>
+
+        <div v-else class="space-y-4">
+          <div
+            v-for="doc in documents"
+            :key="doc.id"
+            class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+          >
+            <div class="flex items-start justify-between">
               <div class="flex-1">
-                <h4 class="text-lg font-medium text-gray-900">{{ doc.name }}</h4>
-                <p class="text-sm text-gray-600">{{ doc.description }}</p>
-                <div class="flex items-center gap-3 mt-2 text-xs text-gray-500">
-                  <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded">{{ doc.type }}</span>
-                  <span>{{ formatDate(doc.updated_at) }}</span>
-                  <span v-if="doc.file_size">{{ formatFileSize(doc.file_size) }}</span>
+                <h3 class="font-semibold text-lg text-gray-900">{{ doc.title }}</h3>
+                <p v-if="doc.description" class="text-gray-600 mt-1">{{ doc.description }}</p>
+                <div class="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                  <span>{{ formatDate(doc.created_at) }}</span>
+                  <a
+                    :href="doc.pdf_url"
+                    target="_blank"
+                    class="text-blue-600 hover:underline"
+                  >
+                    Voir le PDF ↗
+                  </a>
                 </div>
               </div>
-            </div>
-            <div class="flex items-center space-x-2 ml-4">
-              <a
-                :href="doc.file_url"
-                target="_blank"
-                class="p-2 text-blue-600 hover:text-blue-900"
-                title="Voir"
-              >
-                <Icon name="mdi:eye" class="h-5 w-5" />
-              </a>
-              <a
-                :href="doc.file_url"
-                download
-                class="p-2 text-green-600 hover:text-green-900"
-                title="Télécharger"
-              >
-                <Icon name="mdi:download" class="h-5 w-5" />
-              </a>
-              <button
-                @click="editDocument(doc)"
-                class="p-2 text-blue-600 hover:text-blue-900"
-                title="Modifier"
-              >
-                <Icon name="mdi:pencil" class="h-5 w-5" />
-              </button>
+
               <button
                 @click="deleteDocument(doc)"
-                class="p-2 text-red-600 hover:text-red-900"
-                title="Supprimer"
+                class="ml-4 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               >
-                <Icon name="mdi:delete" class="h-5 w-5" />
+                Supprimer
               </button>
             </div>
           </div>
@@ -219,223 +147,183 @@
 </template>
 
 <script setup>
-definePageMeta({
-  layout: 'admin',
-  middleware: 'auth'
+const supabase = useSupabase()
+const { uploadPDF, deletePDF } = useSupabaseStorage()
+
+// État
+const documents = ref([])
+const loading = ref(true)
+const isUploading = ref(false)
+const uploadProgress = ref(0)
+const selectedFile = ref(null)
+const fileInput = ref(null)
+
+const formData = ref({
+  title: '',
+  description: ''
 })
 
-const supabase = useSupabase()
-const { uploadImage } = useCloudinary()
-const documents = ref([])
-const loadingList = ref(true)
-const loading = ref(false)
-const uploading = ref(false)
-const uploadProgress = ref(0)
-const editingDoc = ref(null)
-
-const form = ref({
-  name: '',
-  type: 'synthese',
-  description: '',
-  file_url: '',
-  file_size: null
+const message = ref({
+  text: '',
+  type: '' // 'success' ou 'error'
 })
 
 // Charger les documents
-const loadDocuments = async () => {
-  loadingList.value = true
+const fetchDocuments = async () => {
   try {
     const { data, error } = await supabase
       .from('documents')
       .select('*')
-      .order('updated_at', { ascending: false })
+      .order('created_at', { ascending: false })
 
     if (error) throw error
     documents.value = data || []
   } catch (error) {
     console.error('Erreur chargement documents:', error)
-    alert('Erreur lors du chargement des documents')
-  } finally {
-    loadingList.value = false
-  }
-}
-
-// Upload fichier
-const handleFileSelect = async (event) => {
-  const file = event.target.files[0]
-  if (!file) return
-
-  // Vérifier que c'est un PDF
-  if (!file.type.includes('pdf')) {
-    alert('Seuls les fichiers PDF sont acceptés')
-    event.target.value = ''
-    return
-  }
-
-  // Vérifier la taille
-  if (file.size > 10 * 1024 * 1024) {
-    alert('Le fichier est trop volumineux (max 10MB)')
-    event.target.value = ''
-    return
-  }
-
-  try {
-    uploading.value = true
-    uploadProgress.value = 0
-
-    // Simuler progression
-    const interval = setInterval(() => {
-      if (uploadProgress.value < 90) {
-        uploadProgress.value += 10
-      }
-    }, 200)
-
-    // Upload vers Cloudinary (accepte aussi les PDFs)
-    const result = await uploadImage(file)
-    
-    clearInterval(interval)
-    uploadProgress.value = 100
-
-    // Mettre à jour le formulaire
-    form.value.file_url = result.url
-    form.value.file_size = file.size
-
-    console.log('✅ PDF uploadé avec succès:', result.url)
-  } catch (error) {
-    console.error('❌ Erreur upload:', error)
-    alert('Erreur lors de l\'upload du fichier. Veuillez réessayer.')
-  } finally {
-    uploading.value = false
-    uploadProgress.value = 0
-    event.target.value = ''
-  }
-}
-
-// Submit formulaire
-const handleSubmit = async () => {
-  // Validation
-  if (!form.value.name || !form.value.file_url) {
-    alert('Veuillez remplir tous les champs obligatoires')
-    return
-  }
-
-  loading.value = true
-
-  try {
-    // Préparer les données
-    const documentData = {
-      name: form.value.name,
-      type: form.value.type,
-      description: form.value.description || '',
-      file_url: form.value.file_url,
-      file_size: form.value.file_size
-    }
-
-    if (editingDoc.value) {
-      // Mise à jour
-      console.log('Mise à jour du document:', editingDoc.value.id, documentData)
-      
-      const { error } = await supabase
-        .from('documents')
-        .update(documentData)
-        .eq('id', editingDoc.value.id)
-
-      if (error) throw error
-      
-      console.log('✅ Document mis à jour')
-      alert('Document mis à jour avec succès !')
-    } else {
-      // Création
-      console.log('Création d\'un nouveau document:', documentData)
-      
-      const { error } = await supabase
-        .from('documents')
-        .insert([documentData])
-
-      if (error) throw error
-      
-      console.log('✅ Document créé')
-      alert('Document créé avec succès !')
-    }
-
-    // Réinitialiser et recharger
-    handleCancel()
-    await loadDocuments()
-  } catch (error) {
-    console.error('❌ Erreur lors de la sauvegarde:', error)
-    alert(`Erreur lors de la sauvegarde: ${error.message}`)
+    showMessage('Erreur lors du chargement des documents', 'error')
   } finally {
     loading.value = false
   }
 }
 
-// Éditer un document
-const editDocument = (doc) => {
-  editingDoc.value = doc
-  form.value = {
-    name: doc.name,
-    type: doc.type,
-    description: doc.description || '',
-    file_url: doc.file_url,
-    file_size: doc.file_size
+// Sélection de fichier
+const handleFileSelect = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    if (file.type !== 'application/pdf') {
+      showMessage('Veuillez sélectionner un fichier PDF', 'error')
+      event.target.value = ''
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showMessage('Le fichier est trop volumineux (max 10MB)', 'error')
+      event.target.value = ''
+      return
+    }
+    selectedFile.value = file
   }
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// Soumission du formulaire
+const handleSubmit = async () => {
+  if (!selectedFile.value) {
+    showMessage('Veuillez sélectionner un fichier PDF', 'error')
+    return
+  }
+
+  isUploading.value = true
+  uploadProgress.value = 0
+
+  try {
+    // Simuler progression
+    const progressInterval = setInterval(() => {
+      if (uploadProgress.value < 90) {
+        uploadProgress.value += 10
+      }
+    }, 200)
+
+    // Upload vers Supabase Storage
+    const uploadResult = await uploadPDF(selectedFile.value)
+
+    clearInterval(progressInterval)
+
+    if (!uploadResult) {
+      throw new Error('Erreur lors de l\'upload du fichier')
+    }
+
+    uploadProgress.value = 95
+
+    // Sauvegarder dans la base de données
+    const { data, error } = await supabase
+      .from('documents')
+      .insert([{
+        title: formData.value.title,
+        description: formData.value.description || null,
+        pdf_url: uploadResult.url,
+        file_path: uploadResult.path // Important pour la suppression
+      }])
+      .select()
+
+    if (error) throw error
+
+    uploadProgress.value = 100
+
+    // Ajouter le nouveau document à la liste
+    if (data && data[0]) {
+      documents.value.unshift(data[0])
+    }
+
+    // Réinitialiser le formulaire
+    formData.value = { title: '', description: '' }
+    selectedFile.value = null
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
+
+    showMessage('Document ajouté avec succès !', 'success')
+
+    // Réinitialiser la progression après 2 secondes
+    setTimeout(() => {
+      uploadProgress.value = 0
+    }, 2000)
+
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout du document:', error)
+    showMessage('Erreur lors de l\'ajout du document', 'error')
+  } finally {
+    isUploading.value = false
+  }
 }
 
 // Supprimer un document
 const deleteDocument = async (doc) => {
-  if (!confirm(`Êtes-vous sûr de vouloir supprimer "${doc.name}" ?`)) {
+  if (!confirm(`Êtes-vous sûr de vouloir supprimer "${doc.title}" ?`)) {
     return
   }
 
   try {
-    console.log('Suppression du document:', doc.id)
-    
+    // Supprimer le fichier de Supabase Storage
+    if (doc.file_path) {
+      await deletePDF(doc.file_path)
+    }
+
+    // Supprimer l'entrée de la base de données
     const { error } = await supabase
       .from('documents')
       .delete()
       .eq('id', doc.id)
 
     if (error) throw error
-    
-    console.log('✅ Document supprimé')
-    alert('Document supprimé avec succès !')
-    
-    await loadDocuments()
+
+    // Retirer de la liste locale
+    documents.value = documents.value.filter(d => d.id !== doc.id)
+    showMessage('Document supprimé avec succès', 'success')
+
   } catch (error) {
-    console.error('❌ Erreur lors de la suppression:', error)
-    alert(`Erreur lors de la suppression: ${error.message}`)
+    console.error('Erreur suppression document:', error)
+    showMessage('Erreur lors de la suppression', 'error')
   }
 }
 
-// Annuler l'édition
-const handleCancel = () => {
-  editingDoc.value = null
-  form.value = {
-    name: '',
-    type: 'synthese',
-    description: '',
-    file_url: '',
-    file_size: null
-  }
+// Afficher un message
+const showMessage = (text, type) => {
+  message.value = { text, type }
+  setTimeout(() => {
+    message.value = { text: '', type: '' }
+  }, 5000)
 }
 
 // Formater la date
-const formatDate = (date) => {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('fr-FR')
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
 }
 
-// Formater la taille
-const formatFileSize = (bytes) => {
-  if (!bytes) return ''
-  const sizes = ['o', 'Ko', 'Mo', 'Go']
-  const i = Math.floor(Math.log(bytes) / Math.log(1024))
-  return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i]
-}
-
-// Charger au montage
+// Charger les documents au montage
 onMounted(() => {
-  loadDocuments()
+  fetchDocuments()
 })
 </script>
