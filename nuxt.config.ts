@@ -1,9 +1,11 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-09-14',
+  
   modules: [
     '@unocss/nuxt',
     '@nuxt/icon'
   ],
+  
   app: {
     head: {
       link: [
@@ -23,6 +25,7 @@ export default defineNuxtConfig({
       ]
     }
   },
+  
   runtimeConfig: {
     public: {
       // Supabase
@@ -34,4 +37,16 @@ export default defineNuxtConfig({
       cloudinaryUploadPreset: process.env.NUXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
     }
   },
+
+  // ✅ AJOUT : Fix pour Supabase et Cloudflare Pages
+  nitro: {
+    moduleSideEffects: ['@supabase/supabase-js'],
+    preset: 'cloudflare-pages-static'
+  },
+
+  vite: {
+    optimizeDeps: {
+      include: ['@supabase/supabase-js']
+    }
+  }
 })
