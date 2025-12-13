@@ -326,7 +326,8 @@
             </label>
             <input
               id="published_at"
-              v-model="form.published_at"
+              :value="formatDatetimeLocal(form.published_at)"
+              @input="form.published_at = $event.target.value"
               type="datetime-local"
               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black"
             >
@@ -650,4 +651,20 @@ const startSync = async () => {
 onMounted(() => {
   loadArticles()
 })
+
+// Fonction pour formater la date au bon format pour datetime-local
+const formatDatetimeLocal = (dateString) => {
+  if (!dateString) return ''
+  
+  // Convertir en format YYYY-MM-DDTHH:mm (sans secondes)
+  const date = new Date(dateString)
+  
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
 </script>
