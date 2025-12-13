@@ -41,26 +41,11 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'cloudflare-pages-static',
     prerender: {
-      // Ne pas prerender les pages qui utilisent Supabase
-      ignore: ['/admin', '/admin/*']
+      crawlLinks: false,
+      routes: ['/404.html']
     }
   },
 
-  // ✅ IMPORTANT : Externaliser Supabase pour éviter les erreurs de module
-  vite: {
-    resolve: {
-      alias: {
-        '.prisma/client/index-browser': './node_modules/.prisma/client/index-browser.js'
-      }
-    },
-    optimizeDeps: {
-      exclude: ['@supabase/supabase-js']
-    }
-  },
-
-  // ✅ Désactiver SSR pour les routes qui utilisent Supabase
-  routeRules: {
-    '/admin/**': { ssr: false },
-    '/synthese': { ssr: false }
-  }
+  // Désactiver SSR pour toutes les pages qui utilisent Supabase
+  ssr: false
 })
