@@ -1,7 +1,6 @@
 export const useSupabase = () => {
-  // Import dynamique côté client uniquement
+  // Mock côté serveur pour éviter les erreurs de build
   if (process.server) {
-    // Retourne un mock côté serveur pour éviter les erreurs de build
     return {
       from: () => ({
         select: () => Promise.resolve({ data: [], error: null }),
@@ -11,8 +10,6 @@ export const useSupabase = () => {
       }),
       auth: {
         getUser: () => Promise.resolve({ data: { user: null }, error: null }),
-        signIn: () => Promise.resolve({ data: null, error: null }),
-        signOut: () => Promise.resolve({ error: null }),
       },
       storage: {
         from: () => ({
@@ -24,12 +21,15 @@ export const useSupabase = () => {
     }
   }
 
-  // Import réel côté client
+  // Import dynamique côté client uniquement
   const config = useRuntimeConfig()
-  const { createClient } = require('@supabase/supabase-js')
   
-  return createClient(
-    config.public.supabaseUrl,
-    config.public.supabaseKey
-  )
+  // Utiliser l'import dynamique au lieu de require
+  return (async () => {
+    const { createClient } = await import('@supabase/supabase-js')
+    return createClient(
+      config.public.supabaseUrl,
+      config.public.supabaseKey
+    )
+  })()
 }
