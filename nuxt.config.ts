@@ -38,15 +38,29 @@ export default defineNuxtConfig({
     }
   },
 
-  // ✅ AJOUT : Fix pour Supabase et Cloudflare Pages
   nitro: {
-    moduleSideEffects: ['@supabase/supabase-js'],
-    preset: 'cloudflare-pages-static'
+    preset: 'cloudflare-pages-static',
+    prerender: {
+      // Ne pas prerender les pages qui utilisent Supabase
+      ignore: ['/admin', '/admin/*']
+    }
   },
 
+  // ✅ IMPORTANT : Externaliser Supabase pour éviter les erreurs de module
   vite: {
+    resolve: {
+      alias: {
+        '.prisma/client/index-browser': './node_modules/.prisma/client/index-browser.js'
+      }
+    },
     optimizeDeps: {
-      include: ['@supabase/supabase-js']
+      exclude: ['@supabase/supabase-js']
     }
+  },
+
+  // ✅ Désactiver SSR pour les routes qui utilisent Supabase
+  routeRules: {
+    '/admin/**': { ssr: false },
+    '/synthese': { ssr: false }
   }
 })
