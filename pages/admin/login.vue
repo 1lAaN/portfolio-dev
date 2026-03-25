@@ -14,17 +14,31 @@
       </div>
       
       <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
-        <div>
-          <label for="password" class="sr-only">Mot de passe</label>
-          <input
-            id="password"
-            v-model="password"
-            name="password"
-            type="password"
-            required
-            class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-black focus:z-10 sm:text-sm"
-            placeholder="Mot de passe"
-          >
+        <div class="space-y-3">
+          <div>
+            <label for="email" class="sr-only">Email</label>
+            <input
+              id="email"
+              v-model="email"
+              name="email"
+              type="email"
+              required
+              class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-black focus:z-10 sm:text-sm"
+              placeholder="Email"
+            >
+          </div>
+          <div>
+            <label for="password" class="sr-only">Mot de passe</label>
+            <input
+              id="password"
+              v-model="password"
+              name="password"
+              type="password"
+              required
+              class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-black focus:z-10 sm:text-sm"
+              placeholder="Mot de passe"
+            >
+          </div>
         </div>
 
         <div v-if="error" class="rounded-md bg-red-50 p-4">
@@ -63,6 +77,7 @@ definePageMeta({
 })
 
 const { login } = useAuth()
+const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
@@ -72,7 +87,7 @@ const handleLogin = async () => {
   loading.value = true
 
   try {
-    const result = await login(password.value)
+    const result = await login(email.value, password.value)
     
     if (result.success) {
       navigateTo('/admin')

@@ -3,54 +3,29 @@ export const useAuth = () => {
   const user = useState('user', () => null)
   const isAuthenticated = computed(() => !!user.value)
 
-  // Vérifier si l'utilisateur est connecté au chargement
   const checkAuth = async () => {
-    const token = localStorage.getItem('admin_token')
-    if (token) {
-      // Vérifier la validité du token
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('id', token)
-        .single()
-
-      if (data && !error) {
-        user.value = data
-        return true
-      } else {
-        localStorage.removeItem('admin_token')
-      }
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      user.value = session.user
+      return true
     }
+    user.value = null
     return false
   }
 
-  // Connexion
-  const login = async (password: string) => {
+  const login = async (email: string, password: string) => {
     try {
-      // Vérifier le mot de passe
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('password', password)
-        .single()
-
-      if (error || !data) {
-        throw new Error('Mot de passe incorrect')
-      }
-
-      // Stocker le token (ici on utilise l'ID, mais tu peux générer un vrai token JWT)
-      localStorage.setItem('admin_token', data.id)
-      user.value = data
-      
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw new Error('Email ou mot de passe incorrect')
+      user.value = data.user
       return { success: true }
-    } catch (error) {
+    } catch (error: any) {
       return { success: false, error: error.message }
     }
   }
 
-  // Déconnexion
-  const logout = () => {
-    localStorage.removeItem('admin_token')
+  const logout = async () => {
+    await supabase.auth.signOut()
     user.value = null
     navigateTo('/admin/login')
   }
