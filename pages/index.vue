@@ -262,7 +262,7 @@ const loadExperiences = async () => {
     const { data, error } = await supabase
       .from('experiences')
       .select('*')
-      .order('start_date', { ascending: false })
+      .order('start_date', { ascending: true })
 
     if (error) throw error
     experiences.value = data || []
