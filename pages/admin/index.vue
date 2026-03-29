@@ -140,6 +140,14 @@
           <Icon name="mdi:plus-circle" class="h-6 w-6 mr-3" />
           <span class="font-medium">Ajouter une expérience</span>
         </NuxtLink>
+
+        <NuxtLink
+          to="/admin/categories"
+          class="flex items-center justify-center px-6 py-4 bg-white border-2 border-gray-200 rounded-lg hover:border-black hover:bg-gray-50 transition-all"
+        >
+          <Icon name="mdi:shape" class="h-6 w-6 mr-3" />
+          <span class="font-medium">Gérer les catégories</span>
+        </NuxtLink>
       </div>
     </div>
 
