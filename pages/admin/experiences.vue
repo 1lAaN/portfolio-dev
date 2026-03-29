@@ -149,19 +149,19 @@
             <!-- Dates -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Date de début *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Mois de début *</label>
                 <input
                   v-model="form.start_date"
-                  type="date"
+                  type="month"
                   required
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm"
                 >
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Date de fin</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Mois de fin</label>
                 <input
                   v-model="form.end_date"
-                  type="date"
+                  type="month"
                   :disabled="form.is_current"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm disabled:bg-gray-50 disabled:text-gray-400"
                 >
@@ -175,7 +175,7 @@
                 v-model="form.is_current"
                 type="checkbox"
                 class="h-4 w-4 rounded border-gray-300 text-black focus:ring-black"
-                @change="if (form.is_current) form.end_date = ''"
+                @change="form.is_current && (form.end_date = '')"
               >
               <label for="is_current" class="text-sm font-medium text-gray-700">En cours</label>
             </div>
@@ -274,8 +274,8 @@ const openForm = (exp = null) => {
       type: exp.type,
       organization: exp.organization,
       location: exp.location || '',
-      start_date: exp.start_date || '',
-      end_date: exp.end_date || '',
+      start_date: exp.start_date ? exp.start_date.slice(0, 7) : '',
+      end_date: exp.end_date ? exp.end_date.slice(0, 7) : '',
       is_current: exp.is_current || false,
       description: exp.description || '',
     }
@@ -295,13 +295,14 @@ const saveExperience = async () => {
   saving.value = true
   formError.value = ''
   try {
+    const toDate = (ym) => ym ? `${ym}-01` : null
     const payload = {
       title: form.value.title,
       type: form.value.type,
       organization: form.value.organization,
       location: form.value.location || null,
-      start_date: form.value.start_date,
-      end_date: form.value.is_current ? null : (form.value.end_date || null),
+      start_date: toDate(form.value.start_date),
+      end_date: form.value.is_current ? null : toDate(form.value.end_date),
       is_current: form.value.is_current,
       description: form.value.description || null,
     }
