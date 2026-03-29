@@ -15,7 +15,7 @@
     </div>
 
     <!-- Statistiques -->
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 mb-8">
       <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
         <div class="p-6">
           <div class="flex items-center">
@@ -79,6 +79,22 @@
           </div>
         </div>
       </div>
+
+      <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200">
+        <div class="p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 bg-pink-100 rounded-lg p-3">
+              <Icon name="mdi:timeline" class="h-6 w-6 text-pink-600" />
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 truncate">Expériences</dt>
+                <dd class="text-3xl font-bold text-gray-900">{{ stats.totalExperiences }}</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Actions rapides -->
@@ -115,6 +131,14 @@
         >
           <Icon name="mdi:file-upload" class="h-6 w-6 mr-3" />
           <span class="font-medium">Gérer documents</span>
+        </NuxtLink>
+
+        <NuxtLink
+          to="/admin/experiences"
+          class="flex items-center justify-center px-6 py-4 bg-white border-2 border-gray-200 rounded-lg hover:border-black hover:bg-gray-50 transition-all"
+        >
+          <Icon name="mdi:plus-circle" class="h-6 w-6 mr-3" />
+          <span class="font-medium">Ajouter une expérience</span>
         </NuxtLink>
       </div>
     </div>
@@ -251,7 +275,8 @@ const stats = ref({
   totalProjects: 0,
   totalSkills: 0,
   totalArticles: 0,
-  totalDocuments: 0
+  totalDocuments: 0,
+  totalExperiences: 0
 })
 
 const recentProjects = ref([])
@@ -260,18 +285,20 @@ const recentArticles = ref([])
 // Charger les statistiques
 const loadStats = async () => {
   try {
-    const [projectsRes, skillsRes, articlesRes, documentsRes] = await Promise.all([
+    const [projectsRes, skillsRes, articlesRes, documentsRes, experiencesRes] = await Promise.all([
       supabase.from('projects').select('id', { count: 'exact' }),
       supabase.from('skills').select('id', { count: 'exact' }),
       supabase.from('tech_watch').select('id', { count: 'exact' }),
-      supabase.from('documents').select('id', { count: 'exact' })
+      supabase.from('documents').select('id', { count: 'exact' }),
+      supabase.from('experiences').select('id', { count: 'exact' })
     ])
 
     stats.value = {
       totalProjects: projectsRes.count || 0,
       totalSkills: skillsRes.count || 0,
       totalArticles: articlesRes.count || 0,
-      totalDocuments: documentsRes.count || 0
+      totalDocuments: documentsRes.count || 0,
+      totalExperiences: experiencesRes.count || 0
     }
   } catch (error) {
     console.error('Erreur:', error)

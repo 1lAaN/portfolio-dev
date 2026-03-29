@@ -28,6 +28,74 @@
       </div>
     </section>
 
+    <!-- Section Expériences -->
+    <section id="experiences" class="py-20 bg-gray-50">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">Expériences</h2>
+          <p class="text-xl text-gray-600">Mon parcours en formation et en entreprise</p>
+        </div>
+
+        <div v-if="loadingExperiences" class="text-center py-12">
+          <Icon name="mdi:loading" class="animate-spin h-8 w-8 mx-auto text-gray-400" />
+        </div>
+
+        <div v-else-if="experiences.length === 0" class="text-center py-12">
+          <p class="text-gray-500">Aucune expérience à afficher pour le moment</p>
+        </div>
+
+        <!-- Frise chronologique -->
+        <div v-else class="relative">
+          <!-- Ligne centrale -->
+          <div class="absolute left-1/2 transform -translate-x-1/2 h-full w-0.5 bg-gray-200 hidden md:block" />
+
+          <div class="space-y-12">
+            <div
+              v-for="(exp, index) in experiences"
+              :key="exp.id"
+              :ref="el => { if (el) timelineItems[index] = el }"
+              class="timeline-item relative flex items-start gap-8"
+              :class="index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'"
+              style="opacity: 0; transition: opacity 0.6s ease, transform 0.6s ease;"
+            >
+              <!-- Contenu -->
+              <div class="flex-1 md:max-w-[calc(50%-2rem)]">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <!-- Badge type -->
+                  <span
+                    class="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3"
+                    :class="typeColor(exp.type)"
+                  >
+                    {{ exp.type }}
+                  </span>
+
+                  <h3 class="text-lg font-bold text-gray-900 mb-1">{{ exp.title }}</h3>
+                  <p class="text-sm font-medium text-gray-600 mb-1">{{ exp.organization }}</p>
+                  <p v-if="exp.location" class="text-xs text-gray-400 flex items-center gap-1 mb-3">
+                    <Icon name="mdi:map-marker" class="w-3 h-3" />
+                    {{ exp.location }}
+                  </p>
+                  <p class="text-xs text-gray-500 mb-3 flex items-center gap-1">
+                    <Icon name="mdi:calendar" class="w-3 h-3" />
+                    {{ formatDate(exp.start_date) }} — {{ exp.is_current ? 'Aujourd\'hui' : formatDate(exp.end_date) }}
+                  </p>
+                  <p v-if="exp.description" class="text-sm text-gray-600 leading-relaxed">{{ exp.description }}</p>
+                </div>
+              </div>
+
+              <!-- Point central -->
+              <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center">
+                <div class="w-4 h-4 rounded-full bg-black border-4 border-white shadow-md" />
+              </div>
+
+              <!-- Espaceur côté opposé -->
+              <div class="hidden md:block flex-1 md:max-w-[calc(50%-2rem)]" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Section À propos -->
     <section id="about" class="py-20 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -134,6 +202,10 @@ const loading = ref(true)
 const recentProjects = ref([])
 const detailedSkills = ref([])
 const selectedProject = ref(null)
+const loadingExperiences = ref(true)
+const experiences = ref([])
+const timelineItems = ref([])
+let observer = null
 
 // Charger les projets récents depuis Supabase
 const loadRecentProjects = async () => {
@@ -183,10 +255,79 @@ const closeProjectModal = () => {
   selectedProject.value = null
 }
 
+// Charger les expériences depuis Supabase
+const loadExperiences = async () => {
+  loadingExperiences.value = true
+  try {
+    const { data, error } = await supabase
+      .from('experiences')
+      .select('*')
+      .order('start_date', { ascending: false })
+
+    if (error) throw error
+    experiences.value = data || []
+  } catch (error) {
+    console.error('❌ Erreur chargement expériences:', error)
+  } finally {
+    loadingExperiences.value = false
+  }
+}
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+}
+
+const typeColor = (type) => {
+  const map = {
+    'Stage': 'bg-blue-100 text-blue-700',
+    'Diplôme': 'bg-green-100 text-green-700',
+    'Formation': 'bg-purple-100 text-purple-700',
+    'Emploi': 'bg-orange-100 text-orange-700',
+  }
+  return map[type] || 'bg-gray-100 text-gray-600'
+}
+
+const initScrollObserver = () => {
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const el = entry.target
+          const index = Number(el.dataset.index)
+          const fromLeft = index % 2 === 0
+          el.style.opacity = '1'
+          el.style.transform = 'translateX(0)'
+          observer.unobserve(el)
+        }
+      })
+    },
+    { threshold: 0.15 }
+  )
+}
+
+watch(experiences, async () => {
+  await nextTick()
+  timelineItems.value.forEach((el, index) => {
+    if (!el) return
+    el.dataset.index = index
+    const fromLeft = index % 2 === 0
+    el.style.transform = `translateX(${fromLeft ? '-40px' : '40px'})`
+    observer?.observe(el)
+  })
+})
+
 // Charger au montage du composant
 onMounted(() => {
   loadRecentProjects()
   loadSkills()
+  loadExperiences()
+  initScrollObserver()
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
 })
 </script>
 
