@@ -54,7 +54,7 @@
             <p class="text-sm text-gray-600 font-medium">{{ exp.organization }}</p>
             <p v-if="exp.location" class="text-xs text-gray-400">{{ exp.location }}</p>
             <p class="text-xs text-gray-400 mt-1">
-              {{ formatDate(exp.start_date) }} — {{ exp.is_current ? 'Aujourd\'hui' : formatDate(exp.end_date) }}
+              {{ formatDate(exp.start_date, exp.exact_date) }} — {{ exp.is_current ? 'Aujourd\'hui' : formatDate(exp.end_date, exp.exact_date) }}
             </p>
             <p v-if="exp.description" class="text-sm text-gray-500 mt-2 line-clamp-2">{{ exp.description }}</p>
           </div>
@@ -146,22 +146,38 @@
               >
             </div>
 
+            <!-- Précision des dates -->
+            <div class="flex items-center gap-2">
+              <input
+                id="exact_date"
+                v-model="form.exact_date"
+                type="checkbox"
+                class="h-4 w-4 rounded border-gray-300 text-black focus:ring-black"
+                @change="form.start_date = ''; form.end_date = ''"
+              >
+              <label for="exact_date" class="text-sm font-medium text-gray-700">Date exacte (jour précis)</label>
+            </div>
+
             <!-- Dates -->
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Mois de début *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ form.exact_date ? 'Date de début *' : 'Mois de début *' }}
+                </label>
                 <input
                   v-model="form.start_date"
-                  type="month"
+                  :type="form.exact_date ? 'date' : 'month'"
                   required
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm"
                 >
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Mois de fin</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  {{ form.exact_date ? 'Date de fin' : 'Mois de fin' }}
+                </label>
                 <input
                   v-model="form.end_date"
-                  type="month"
+                  :type="form.exact_date ? 'date' : 'month'"
                   :disabled="form.is_current"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm disabled:bg-gray-50 disabled:text-gray-400"
                 >
@@ -244,6 +260,7 @@ const defaultForm = () => ({
   end_date: '',
   is_current: false,
   description: '',
+  exact_date: false,
 })
 
 const form = ref(defaultForm())
@@ -269,13 +286,19 @@ const openForm = (exp = null) => {
   editingExp.value = exp
   formError.value = ''
   if (exp) {
+    const isExact = exp.start_date && !exp.start_date.endsWith('-01') || (exp.start_date && exp.exact_date)
     form.value = {
       title: exp.title,
       type: exp.type,
       organization: exp.organization,
       location: exp.location || '',
-      start_date: exp.start_date ? exp.start_date.slice(0, 7) : '',
-      end_date: exp.end_date ? exp.end_date.slice(0, 7) : '',
+      exact_date: exp.exact_date || false,
+      start_date: exp.start_date
+        ? (exp.exact_date ? exp.start_date : exp.start_date.slice(0, 7))
+        : '',
+      end_date: exp.end_date
+        ? (exp.exact_date ? exp.end_date : exp.end_date.slice(0, 7))
+        : '',
       is_current: exp.is_current || false,
       description: exp.description || '',
     }
@@ -295,12 +318,16 @@ const saveExperience = async () => {
   saving.value = true
   formError.value = ''
   try {
-    const toDate = (ym) => ym ? `${ym}-01` : null
+    const toDate = (val) => {
+      if (!val) return null
+      return form.value.exact_date ? val : `${val}-01`
+    }
     const payload = {
       title: form.value.title,
       type: form.value.type,
       organization: form.value.organization,
       location: form.value.location || null,
+      exact_date: form.value.exact_date,
       start_date: toDate(form.value.start_date),
       end_date: form.value.is_current ? null : toDate(form.value.end_date),
       is_current: form.value.is_current,
@@ -343,9 +370,10 @@ const deleteExperience = async (exp) => {
   }
 }
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr, exact = false) => {
   if (!dateStr) return ''
   const d = new Date(dateStr)
+  if (exact) return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
   return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 }
 

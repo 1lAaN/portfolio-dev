@@ -77,7 +77,7 @@
                   </p>
                   <p class="text-xs text-gray-500 mb-3 flex items-center gap-1">
                     <Icon name="mdi:calendar" class="w-3 h-3" />
-                    {{ formatDate(exp.start_date) }} — {{ exp.is_current ? 'Aujourd\'hui' : formatDate(exp.end_date) }}
+                    {{ formatDate(exp.start_date, exp.exact_date) }} — {{ exp.is_current ? 'Aujourd\'hui' : formatDate(exp.end_date, exp.exact_date) }}
                   </p>
                   <p v-if="exp.description" class="text-sm text-gray-600 leading-relaxed">{{ exp.description }}</p>
                 </div>
@@ -273,9 +273,10 @@ const loadExperiences = async () => {
   }
 }
 
-const formatDate = (dateStr) => {
+const formatDate = (dateStr, exact = false) => {
   if (!dateStr) return ''
   const d = new Date(dateStr)
+  if (exact) return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
   return d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 }
 
