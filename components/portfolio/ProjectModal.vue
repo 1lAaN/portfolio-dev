@@ -24,6 +24,15 @@
             }"
           >
 
+          <!-- Bouton plein écran -->
+          <button
+            @click="openLightbox(currentIndex)"
+            class="absolute top-4 left-4 bg-black bg-opacity-50 hover:bg-opacity-70 text-white p-2 rounded-lg transition-all"
+            title="Voir en plein écran"
+          >
+            <Icon name="mdi:fullscreen" class="h-5 w-5" />
+          </button>
+
           <!-- Navigation précédent/suivant -->
           <template v-if="projectImages.length > 1">
             <button
@@ -133,6 +142,54 @@
       </div>
     </div>
   </div>
+
+  <!-- Lightbox plein écran -->
+  <Teleport to="body">
+    <div
+      v-if="lightboxIndex !== null"
+      class="fixed inset-0 bg-black z-[100] flex items-center justify-center"
+      @click.self="lightboxIndex = null"
+    >
+      <img
+        :src="projectImages[lightboxIndex]"
+        :alt="`${project?.title} - ${lightboxIndex + 1}`"
+        class="max-w-full max-h-full object-contain select-none"
+      >
+
+      <!-- Fermer -->
+      <button
+        @click="lightboxIndex = null"
+        class="absolute top-4 right-4 text-white bg-white bg-opacity-20 hover:bg-opacity-30 p-2 rounded-lg transition-all"
+      >
+        <Icon name="mdi:close" class="h-6 w-6" />
+      </button>
+
+      <!-- Précédent -->
+      <button
+        v-if="projectImages.length > 1"
+        @click="lightboxIndex = (lightboxIndex - 1 + projectImages.length) % projectImages.length"
+        class="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-white bg-opacity-20 hover:bg-opacity-30 p-3 rounded-full transition-all"
+      >
+        <Icon name="mdi:chevron-left" class="h-6 w-6" />
+      </button>
+
+      <!-- Suivant -->
+      <button
+        v-if="projectImages.length > 1"
+        @click="lightboxIndex = (lightboxIndex + 1) % projectImages.length"
+        class="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-white bg-opacity-20 hover:bg-opacity-30 p-3 rounded-full transition-all"
+      >
+        <Icon name="mdi:chevron-right" class="h-6 w-6" />
+      </button>
+
+      <!-- Compteur -->
+      <div v-if="projectImages.length > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2">
+        <span class="text-white text-sm bg-white bg-opacity-20 px-3 py-1 rounded">
+          {{ lightboxIndex + 1 }} / {{ projectImages.length }}
+        </span>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -157,6 +214,11 @@ const projectImages = computed(() => {
 
 // Navigation du carrousel
 const currentIndex = ref(0)
+const lightboxIndex = ref(null)
+
+const openLightbox = (index) => {
+  lightboxIndex.value = index
+}
 
 const nextImage = () => {
   currentIndex.value = (currentIndex.value + 1) % projectImages.value.length
@@ -172,6 +234,12 @@ const prevImage = () => {
 const handleKeydown = (e) => {
   if (!props.project) return
   
+  if (lightboxIndex.value !== null) {
+    if (e.key === 'ArrowRight') lightboxIndex.value = (lightboxIndex.value + 1) % projectImages.value.length
+    if (e.key === 'ArrowLeft') lightboxIndex.value = (lightboxIndex.value - 1 + projectImages.value.length) % projectImages.value.length
+    if (e.key === 'Escape') lightboxIndex.value = null
+    return
+  }
   if (e.key === 'ArrowRight') nextImage()
   if (e.key === 'ArrowLeft') prevImage()
   if (e.key === 'Escape') emit('close')
@@ -188,5 +256,6 @@ onBeforeUnmount(() => {
 // Réinitialiser l'index quand on change de projet
 watch(() => props.project, () => {
   currentIndex.value = 0
+  lightboxIndex.value = null
 })
 </script>
