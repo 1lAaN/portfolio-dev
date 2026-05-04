@@ -1,17 +1,36 @@
 <template>
   <div>
-    <div class="mb-8 flex justify-between items-center">
+    <div class="mb-8">
+      <NuxtLink
+        to="/admin"
+        class="inline-flex items-center text-sm text-gray-500 hover:text-gray-800 mb-4 transition-colors"
+      >
+        <Icon name="mdi:arrow-left" class="w-4 h-4 mr-1" />
+        Dashboard
+      </NuxtLink>
+      <div class="flex justify-between items-center">
       <div>
         <h1 class="text-3xl font-bold text-gray-900">Expériences</h1>
         <p class="mt-2 text-gray-600">Gérez votre parcours (stages, formations, diplômes…)</p>
       </div>
-      <button
-        @click="openForm()"
-        class="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-      >
-        <Icon name="mdi:plus" class="h-5 w-5 mr-2" />
-        Ajouter
-      </button>
+      <div class="flex items-center gap-3">
+        <button
+          @click="sortOrder = sortOrder === 'desc' ? 'asc' : 'desc'"
+          class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors gap-2"
+          :title="sortOrder === 'desc' ? 'Plus récent en haut (cliquer pour inverser)' : 'Plus ancien en haut (cliquer pour inverser)'"
+        >
+          <Icon :name="sortOrder === 'desc' ? 'mdi:sort-descending' : 'mdi:sort-ascending'" class="h-4 w-4" />
+          {{ sortOrder === 'desc' ? 'Plus récent en haut' : 'Plus ancien en haut' }}
+        </button>
+        <button
+          @click="openForm()"
+          class="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+        >
+          <Icon name="mdi:plus" class="h-5 w-5 mr-2" />
+          Ajouter
+        </button>
+      </div>
+    </div>
     </div>
 
     <!-- Liste -->
@@ -33,7 +52,7 @@
 
     <div v-else class="space-y-3">
       <div
-        v-for="exp in experiences"
+        v-for="exp in sortedExperiences"
         :key="exp.id"
         class="bg-white rounded-lg border border-gray-200 p-5 flex items-start justify-between hover:shadow-sm transition-shadow"
       >
@@ -246,6 +265,18 @@ const supabase = useSupabase()
 
 const loading = ref(true)
 const experiences = ref([])
+const sortOrder = ref(localStorage.getItem('exp-sort-order') || 'desc')
+
+watch(sortOrder, (val) => localStorage.setItem('exp-sort-order', val))
+
+const sortedExperiences = computed(() => {
+  return [...experiences.value].sort((a, b) => {
+    const dateA = new Date(a.start_date || 0)
+    const dateB = new Date(b.start_date || 0)
+    return sortOrder.value === 'desc' ? dateB - dateA : dateA - dateB
+  })
+})
+
 const showForm = ref(false)
 const editingExp = ref(null)
 const saving = ref(false)
@@ -271,7 +302,6 @@ const loadExperiences = async () => {
     const { data, error } = await supabase
       .from('experiences')
       .select('*')
-      .order('start_date', { ascending: false })
 
     if (error) throw error
     experiences.value = data || []

@@ -259,10 +259,12 @@ const closeProjectModal = () => {
 const loadExperiences = async () => {
   loadingExperiences.value = true
   try {
+    const savedOrder = localStorage.getItem('exp-sort-order')
+    const ascending = savedOrder ? savedOrder === 'asc' : true
     const { data, error } = await supabase
       .from('experiences')
       .select('*')
-      .order('start_date', { ascending: true })
+      .order('start_date', { ascending })
 
     if (error) throw error
     experiences.value = data || []

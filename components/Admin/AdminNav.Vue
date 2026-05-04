@@ -51,6 +51,14 @@
               Veille
             </NuxtLink>
             <NuxtLink
+              to="/admin/experiences"
+              class="nav-link"
+              :class="{ 'nav-link-active': $route.path === '/admin/experiences' }"
+            >
+              <Icon name="mdi:timeline" class="w-5 h-5 mr-2" />
+              Expériences
+            </NuxtLink>
+            <NuxtLink
               to="/admin/documents"
               class="nav-link"
               :class="{ 'nav-link-active': $route.path === '/admin/documents' }"
@@ -63,6 +71,14 @@
 
         <!-- Actions -->
         <div class="flex items-center space-x-3">
+          <NuxtLink
+            v-if="$route.path !== '/admin'"
+            to="/admin"
+            class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+          >
+            <Icon name="mdi:arrow-left" class="w-4 h-4 mr-2" />
+            Retour
+          </NuxtLink>
           <NuxtLink
             to="/"
             class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
