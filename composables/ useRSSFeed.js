@@ -1,6 +1,6 @@
 // composables/useRSSFeed.js
 export const useRSSFeed = () => {
-  const supabase = useSupabase()
+  const pb = usePb()
 
   /* ----------------------------------------------------------
     📌 1. Mots-clés pour les recherches (Google News RSS)
@@ -343,13 +343,13 @@ export const useRSSFeed = () => {
             is_featured: false
           }
 
-          const { error } = await supabase.from('tech_watch').insert([article])
-          if (error) {
-            errorCount++
-            console.error(`Erreur insertion "${item.title}"`, error)
-          } else {
+          try {
+            await pb.collection('tech_watch').create(article)
             successCount++
             onProgress?.(`✅ Ajouté: ${item.title}`)
+          } catch (insertErr) {
+            errorCount++
+            console.error(`Erreur insertion "${item.title}"`, insertErr)
           }
         } catch (err) {
           console.error('Erreur traitement article:', err)
