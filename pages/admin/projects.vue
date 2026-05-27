@@ -174,7 +174,7 @@ const filterCategory = ref('')
 const loadProjects = async () => {
   loading.value = true
   try {
-    projects.value = await pb.collection('projects').getFullList({ sort: '-created' })
+    projects.value = await pb.collection('projects').getFullList()
   } catch (error) {
     console.error('Erreur:', error)
   } finally {

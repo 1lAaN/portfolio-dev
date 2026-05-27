@@ -146,7 +146,7 @@ const loadCategories = async () => {
 const loadProjects = async () => {
   loading.value = true
   try {
-    allProjects.value = await pb.collection('projects').getFullList({ sort: '-created' })
+    allProjects.value = await pb.collection('projects').getFullList()
     
     console.log('✅ Projets chargés:', allProjects.value.length)
   } catch (error) {

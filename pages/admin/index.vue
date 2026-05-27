@@ -315,7 +315,7 @@ const loadStats = async () => {
 // Charger les projets récents
 const loadRecentProjects = async () => {
   try {
-    const res = await pb.collection('projects').getList(1, 5, { sort: '-created' })
+    const res = await pb.collection('projects').getList(1, 5)
     recentProjects.value = res.items
   } catch (error) {
     console.error('Erreur:', error)
@@ -325,7 +325,7 @@ const loadRecentProjects = async () => {
 // Charger les articles récents
 const loadRecentArticles = async () => {
   try {
-    const res = await pb.collection('tech_watch').getList(1, 5, { sort: '-created' })
+    const res = await pb.collection('tech_watch').getList(1, 5, { sort: '-published_at' })
     recentArticles.value = res.items
   } catch (error) {
     console.error('Erreur:', error)

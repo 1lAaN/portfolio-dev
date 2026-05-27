@@ -211,7 +211,7 @@ let observer = null
 const loadRecentProjects = async () => {
   loading.value = true
   try {
-    const res = await pb.collection('projects').getList(1, 3, { sort: '-created' })
+    const res = await pb.collection('projects').getList(1, 3)
     recentProjects.value = res.items
   } catch (error) {
     console.error('❌ Erreur chargement projets:', error)
