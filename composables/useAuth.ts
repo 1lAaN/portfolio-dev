@@ -1,12 +1,11 @@
 export const useAuth = () => {
-  const supabase = useSupabase()
+  const pb = usePb()
   const user = useState('user', () => null)
   const isAuthenticated = computed(() => !!user.value)
 
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session) {
-      user.value = session.user
+  const checkAuth = () => {
+    if (pb.authStore.isValid) {
+      user.value = pb.authStore.model
       return true
     }
     user.value = null
@@ -15,17 +14,16 @@ export const useAuth = () => {
 
   const login = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw new Error('Email ou mot de passe incorrect')
-      user.value = data.user
+      const authData = await pb.collection('users').authWithPassword(email, password)
+      user.value = authData.record
       return { success: true }
-    } catch (error: any) {
-      return { success: false, error: error.message }
+    } catch {
+      return { success: false, error: 'Email ou mot de passe incorrect' }
     }
   }
 
-  const logout = async () => {
-    await supabase.auth.signOut()
+  const logout = () => {
+    pb.authStore.clear()
     user.value = null
     navigateTo('/admin/login')
   }

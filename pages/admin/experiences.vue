@@ -261,7 +261,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const supabase = useSupabase()
+const pb = usePb()
 
 const loading = ref(true)
 const experiences = ref([])
@@ -299,12 +299,7 @@ const form = ref(defaultForm())
 const loadExperiences = async () => {
   loading.value = true
   try {
-    const { data, error } = await supabase
-      .from('experiences')
-      .select('*')
-
-    if (error) throw error
-    experiences.value = data || []
+    experiences.value = await pb.collection('experiences').getFullList()
   } catch (error) {
     console.error('Erreur:', error)
   } finally {
@@ -365,16 +360,9 @@ const saveExperience = async () => {
     }
 
     if (editingExp.value) {
-      const { error } = await supabase
-        .from('experiences')
-        .update(payload)
-        .eq('id', editingExp.value.id)
-      if (error) throw error
+      await pb.collection('experiences').update(editingExp.value.id, payload)
     } else {
-      const { error } = await supabase
-        .from('experiences')
-        .insert(payload)
-      if (error) throw error
+      await pb.collection('experiences').create(payload)
     }
 
     closeForm()
@@ -389,11 +377,7 @@ const saveExperience = async () => {
 const deleteExperience = async (exp) => {
   if (!confirm(`Supprimer "${exp.title}" ?`)) return
   try {
-    const { error } = await supabase
-      .from('experiences')
-      .delete()
-      .eq('id', exp.id)
-    if (error) throw error
+    await pb.collection('experiences').delete(exp.id)
     await loadExperiences()
   } catch (error) {
     alert('Erreur lors de la suppression')

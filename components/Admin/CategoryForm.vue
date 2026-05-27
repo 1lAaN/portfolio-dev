@@ -144,7 +144,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['success', 'cancel'])
-const supabase = useSupabase()
+const pb = usePb()
 
 const isEditing = computed(() => !!props.category)
 const loading = ref(false)
@@ -192,20 +192,9 @@ const handleSubmit = async () => {
 
   try {
     if (isEditing.value) {
-      // Mise à jour
-      const { error } = await supabase
-        .from('categories')
-        .update(form.value)
-        .eq('id', props.category.id)
-
-      if (error) throw error
+      await pb.collection('categories').update(props.category.id, form.value)
     } else {
-      // Création
-      const { error } = await supabase
-        .from('categories')
-        .insert([form.value])
-
-      if (error) throw error
+      await pb.collection('categories').create(form.value)
     }
 
     emit('success')

@@ -109,7 +109,7 @@ useSeoMeta({
   description: 'Découvrez l\'ensemble de mes réalisations en développement web, des projets personnels aux collaborations professionnelles.',
 })
 
-const supabase = useSupabase()
+const pb = usePb()
 
 // État
 const loading = ref(true)
@@ -127,16 +127,11 @@ const allProjects = ref([])
 // Charger les catégories depuis la BDD
 const loadCategories = async () => {
   try {
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .order('display_order', { ascending: true })
+    const data = await pb.collection('categories').getFullList({ sort: 'display_order' })
 
-    if (error) throw error
-    
     // Séparer les catégories visibles et cachées
-    const visible = data?.filter(c => c.visible_in_filters).map(c => c.name) || []
-    const hidden = data?.filter(c => !c.visible_in_filters).map(c => c.name) || []
+    const visible = data.filter(c => c.visible_in_filters).map(c => c.name)
+    const hidden = data.filter(c => !c.visible_in_filters).map(c => c.name)
     
     visibleCategories.value = ['Tous', ...visible]
     hiddenCategories.value = hidden
@@ -151,13 +146,7 @@ const loadCategories = async () => {
 const loadProjects = async () => {
   loading.value = true
   try {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (error) throw error
-    allProjects.value = data || []
+    allProjects.value = await pb.collection('projects').getFullList({ sort: '-created' })
     
     console.log('✅ Projets chargés:', allProjects.value.length)
   } catch (error) {

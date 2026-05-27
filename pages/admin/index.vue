@@ -276,7 +276,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const supabase = useSupabase()
+const pb = usePb()
 const { logout } = useAuth()
 
 const stats = ref({
@@ -294,19 +294,18 @@ const recentArticles = ref([])
 const loadStats = async () => {
   try {
     const [projectsRes, skillsRes, articlesRes, documentsRes, experiencesRes] = await Promise.all([
-      supabase.from('projects').select('id', { count: 'exact' }),
-      supabase.from('skills').select('id', { count: 'exact' }),
-      supabase.from('tech_watch').select('id', { count: 'exact' }),
-      supabase.from('documents').select('id', { count: 'exact' }),
-      supabase.from('experiences').select('id', { count: 'exact' })
+      pb.collection('projects').getList(1, 1),
+      pb.collection('skills').getList(1, 1),
+      pb.collection('tech_watch').getList(1, 1),
+      pb.collection('documents').getList(1, 1),
+      pb.collection('experiences').getList(1, 1),
     ])
-
     stats.value = {
-      totalProjects: projectsRes.count || 0,
-      totalSkills: skillsRes.count || 0,
-      totalArticles: articlesRes.count || 0,
-      totalDocuments: documentsRes.count || 0,
-      totalExperiences: experiencesRes.count || 0
+      totalProjects: projectsRes.totalItems,
+      totalSkills: skillsRes.totalItems,
+      totalArticles: articlesRes.totalItems,
+      totalDocuments: documentsRes.totalItems,
+      totalExperiences: experiencesRes.totalItems,
     }
   } catch (error) {
     console.error('Erreur:', error)
@@ -316,14 +315,8 @@ const loadStats = async () => {
 // Charger les projets récents
 const loadRecentProjects = async () => {
   try {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    if (error) throw error
-    recentProjects.value = data || []
+    const res = await pb.collection('projects').getList(1, 5, { sort: '-created' })
+    recentProjects.value = res.items
   } catch (error) {
     console.error('Erreur:', error)
   }
@@ -332,14 +325,8 @@ const loadRecentProjects = async () => {
 // Charger les articles récents
 const loadRecentArticles = async () => {
   try {
-    const { data, error } = await supabase
-      .from('tech_watch')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    if (error) throw error
-    recentArticles.value = data || []
+    const res = await pb.collection('tech_watch').getList(1, 5, { sort: '-created' })
+    recentArticles.value = res.items
   } catch (error) {
     console.error('Erreur:', error)
   }

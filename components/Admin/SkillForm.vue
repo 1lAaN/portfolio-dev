@@ -122,7 +122,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['success', 'cancel'])
-const supabase = useSupabase()
+const pb = usePb()
 
 const isEditing = computed(() => !!props.skill)
 const loading = ref(false)
@@ -158,20 +158,9 @@ const handleSubmit = async () => {
       .filter(t => t)
 
     if (isEditing.value) {
-      // Mise à jour
-      const { error } = await supabase
-        .from('skills')
-        .update(form.value)
-        .eq('id', props.skill.id)
-
-      if (error) throw error
+      await pb.collection('skills').update(props.skill.id, form.value)
     } else {
-      // Création
-      const { error } = await supabase
-        .from('skills')
-        .insert([form.value])
-
-      if (error) throw error
+      await pb.collection('skills').create(form.value)
     }
 
     emit('success')

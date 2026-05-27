@@ -162,7 +162,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const supabase = useSupabase()
+const pb = usePb()
 const projects = ref([])
 const loading = ref(true)
 const showForm = ref(false)
@@ -174,13 +174,7 @@ const filterCategory = ref('')
 const loadProjects = async () => {
   loading.value = true
   try {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) throw error
-    projects.value = data || []
+    projects.value = await pb.collection('projects').getFullList({ sort: '-created' })
   } catch (error) {
     console.error('Erreur:', error)
   } finally {
@@ -219,12 +213,7 @@ const deleteProject = async (project) => {
   }
 
   try {
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', project.id)
-
-    if (error) throw error
+    await pb.collection('projects').delete(project.id)
     await loadProjects()
   } catch (error) {
     console.error('Erreur:', error)

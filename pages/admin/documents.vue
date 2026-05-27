@@ -121,9 +121,9 @@
                 <h3 class="font-semibold text-lg text-gray-900">{{ doc.title }}</h3>
                 <p v-if="doc.description" class="text-gray-600 mt-1">{{ doc.description }}</p>
                 <div class="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                  <span>{{ formatDate(doc.created_at) }}</span>
+                  <span>{{ formatDate(doc.created) }}</span>
                   <a
-                    :href="doc.pdf_url"
+                    :href="getPdfUrl(doc)"
                     target="_blank"
                     class="text-blue-600 hover:underline"
                   >
@@ -147,8 +147,7 @@
 </template>
 
 <script setup>
-const supabase = useSupabase()
-const { uploadPDF, deletePDF } = useSupabaseStorage()
+const pb = usePb()
 
 // État
 const documents = ref([])
@@ -171,13 +170,7 @@ const message = ref({
 // Charger les documents
 const fetchDocuments = async () => {
   try {
-    const { data, error } = await supabase
-      .from('documents')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) throw error
-    documents.value = data || []
+    documents.value = await pb.collection('documents').getFullList({ sort: '-created' })
   } catch (error) {
     console.error('Erreur chargement documents:', error)
     showMessage('Erreur lors du chargement des documents', 'error')
@@ -222,36 +215,18 @@ const handleSubmit = async () => {
       }
     }, 200)
 
-    // Upload vers Supabase Storage
-    const uploadResult = await uploadPDF(selectedFile.value)
+    const body = new FormData()
+    body.append('title', formData.value.title)
+    body.append('description', formData.value.description || '')
+    body.append('file', selectedFile.value)
 
     clearInterval(progressInterval)
-
-    if (!uploadResult) {
-      throw new Error('Erreur lors de l\'upload du fichier')
-    }
-
     uploadProgress.value = 95
 
-    // Sauvegarder dans la base de données
-    const { data, error } = await supabase
-      .from('documents')
-      .insert([{
-        title: formData.value.title,
-        description: formData.value.description || null,
-        pdf_url: uploadResult.url,
-        file_path: uploadResult.path // Important pour la suppression
-      }])
-      .select()
-
-    if (error) throw error
+    const record = await pb.collection('documents').create(body)
 
     uploadProgress.value = 100
-
-    // Ajouter le nouveau document à la liste
-    if (data && data[0]) {
-      documents.value.unshift(data[0])
-    }
+    documents.value.unshift(record)
 
     // Réinitialiser le formulaire
     formData.value = { title: '', description: '' }
@@ -282,20 +257,7 @@ const deleteDocument = async (doc) => {
   }
 
   try {
-    // Supprimer le fichier de Supabase Storage
-    if (doc.file_path) {
-      await deletePDF(doc.file_path)
-    }
-
-    // Supprimer l'entrée de la base de données
-    const { error } = await supabase
-      .from('documents')
-      .delete()
-      .eq('id', doc.id)
-
-    if (error) throw error
-
-    // Retirer de la liste locale
+    await pb.collection('documents').delete(doc.id)
     documents.value = documents.value.filter(d => d.id !== doc.id)
     showMessage('Document supprimé avec succès', 'success')
 
@@ -312,6 +274,8 @@ const showMessage = (text, type) => {
     message.value = { text: '', type: '' }
   }, 5000)
 }
+
+const getPdfUrl = (doc) => usePbFileUrl(doc, doc.file)
 
 // Formater la date
 const formatDate = (dateString) => {

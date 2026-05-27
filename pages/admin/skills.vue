@@ -116,7 +116,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const supabase = useSupabase()
+const pb = usePb()
 const skills = ref([])
 const loading = ref(true)
 const showForm = ref(false)
@@ -128,13 +128,7 @@ const filterTag = ref('')
 const loadSkills = async () => {
   loading.value = true
   try {
-    const { data, error } = await supabase
-      .from('skills')
-      .select('*')
-      .order('order', { ascending: true })
-
-    if (error) throw error
-    skills.value = data || []
+    skills.value = await pb.collection('skills').getFullList({ sort: 'order' })
   } catch (error) {
     console.error('Erreur:', error)
   } finally {
@@ -173,12 +167,7 @@ const deleteSkill = async (skill) => {
   }
 
   try {
-    const { error } = await supabase
-      .from('skills')
-      .delete()
-      .eq('id', skill.id)
-
-    if (error) throw error
+    await pb.collection('skills').delete(skill.id)
     await loadSkills()
   } catch (error) {
     console.error('Erreur:', error)

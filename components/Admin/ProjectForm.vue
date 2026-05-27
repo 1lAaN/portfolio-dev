@@ -161,7 +161,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['success', 'cancel'])
-const supabase = useSupabase()
+const pb = usePb()
 
 const isEditing = computed(() => !!props.project)
 const loading = ref(false)
@@ -186,14 +186,7 @@ const technologiesInput = ref('')
 // Charger les catégories
 const loadCategories = async () => {
   try {
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .order('order', { ascending: true })
-
-    if (error) throw error
-    categories.value = data || []
-    
+    categories.value = await pb.collection('categories').getFullList({ sort: 'order' })
     if (!isEditing.value && categories.value.length > 0 && !form.value.category) {
       form.value.category = categories.value[0].name
     }
@@ -241,18 +234,9 @@ const handleSubmit = async () => {
     form.value.image_url = form.value.images.length > 0 ? form.value.images[0] : ''
 
     if (isEditing.value) {
-      const { error } = await supabase
-        .from('projects')
-        .update(form.value)
-        .eq('id', props.project.id)
-
-      if (error) throw error
+      await pb.collection('projects').update(props.project.id, form.value)
     } else {
-      const { error } = await supabase
-        .from('projects')
-        .insert([form.value])
-
-      if (error) throw error
+      await pb.collection('projects').create(form.value)
     }
 
     emit('success')

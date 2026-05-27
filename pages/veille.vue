@@ -167,7 +167,7 @@ useSeoMeta({
   description: 'Découvrez ma veille technologique et les dernières actualités du développement web que je suis',
 })
 
-const supabase = useSupabase()
+const pb = usePb()
 const loading = ref(true)
 const allArticles = ref([])
 const selectedTag = ref('Tous')
@@ -176,13 +176,7 @@ const selectedTag = ref('Tous')
 const loadArticles = async () => {
   loading.value = true
   try {
-    const { data, error } = await supabase
-      .from('tech_watch')
-      .select('*')
-      .order('published_at', { ascending: false })
-
-    if (error) throw error
-    allArticles.value = data || []
+    allArticles.value = await pb.collection('tech_watch').getFullList({ sort: '-published_at' })
   } catch (error) {
     console.error('Erreur:', error)
   } finally {

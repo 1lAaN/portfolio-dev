@@ -37,7 +37,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <span>Publié le {{ formatDate(document.created_at) }}</span>
+            <span>Publié le {{ formatDate(document.created) }}</span>
           </div>
         </div>
 
@@ -52,7 +52,7 @@
             </h3>
             <div class="flex gap-2">
               <a
-                :href="document.pdf_url"
+                :href="pdfUrl"
                 target="_blank"
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
               >
@@ -62,7 +62,7 @@
                 Ouvrir dans un nouvel onglet
               </a>
               <a
-                :href="document.pdf_url"
+                :href="pdfUrl"
                 download
                 class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 text-sm"
               >
@@ -77,7 +77,7 @@
           <!-- PDF Iframe -->
           <div class="relative bg-gray-50" style="height: 800px;">
             <iframe
-              :src="document.pdf_url"
+              :src="pdfUrl"
               class="w-full h-full border-0"
               title="Aperçu PDF"
             ></iframe>
@@ -87,7 +87,7 @@
           <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
             <p class="text-sm text-gray-600 text-center">
               Si le document ne s'affiche pas correctement, 
-              <a :href="document.pdf_url" target="_blank" class="text-blue-600 hover:underline font-medium">
+              <a :href="pdfUrl" target="_blank" class="text-blue-600 hover:underline font-medium">
                 cliquez ici pour l'ouvrir dans un nouvel onglet
               </a>
               ou téléchargez-le.
@@ -116,12 +116,14 @@
 </template>
 
 <script setup>
-const supabase = useSupabase()
+const pb = usePb()
 
 // État
 const document = ref(null)
 const loading = ref(true)
 const error = ref(null)
+
+const pdfUrl = computed(() => document.value ? usePbFileUrl(document.value, document.value.file) : '')
 
 // Récupérer le document le plus récent
 const fetchDocument = async () => {
@@ -129,23 +131,8 @@ const fetchDocument = async () => {
   error.value = null
 
   try {
-    const { data, error: fetchError } = await supabase
-      .from('documents')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single()
-
-    if (fetchError) {
-      if (fetchError.code === 'PGRST116') {
-        // Aucun document trouvé
-        document.value = null
-      } else {
-        throw fetchError
-      }
-    } else {
-      document.value = data
-    }
+    const res = await pb.collection('documents').getList(1, 1, { sort: '-created' })
+    document.value = res.items[0] || null
   } catch (err) {
     console.error('Erreur lors du chargement du document:', err)
     error.value = 'Impossible de charger le document. Veuillez réessayer.'

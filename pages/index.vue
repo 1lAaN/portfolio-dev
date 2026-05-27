@@ -195,7 +195,7 @@ useSeoMeta({
   description: 'Portfolio de développeur web spécialisé en Nuxt.js, Vue.js et applications modernes.',
 })
 
-const supabase = useSupabase()
+const pb = usePb()
 
 // État
 const loading = ref(true)
@@ -207,20 +207,12 @@ const experiences = ref([])
 const timelineItems = ref([])
 let observer = null
 
-// Charger les projets récents depuis Supabase
+// Charger les projets récents
 const loadRecentProjects = async () => {
   loading.value = true
   try {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(3) // Seulement les 3 derniers
-
-    if (error) throw error
-    recentProjects.value = data || []
-    
-    console.log('✅ Projets récents chargés:', recentProjects.value)
+    const res = await pb.collection('projects').getList(1, 3, { sort: '-created' })
+    recentProjects.value = res.items
   } catch (error) {
     console.error('❌ Erreur chargement projets:', error)
   } finally {
@@ -228,19 +220,11 @@ const loadRecentProjects = async () => {
   }
 }
 
-// Charger les skills depuis Supabase
+// Charger les skills
 const loadSkills = async () => {
   try {
-    const { data, error } = await supabase
-      .from('skills')
-      .select('*')
-      .order('order', { ascending: true })
-      .limit(8) // Limiter à 8 skills pour l'affichage
-
-    if (error) throw error
-    detailedSkills.value = data || []
-    
-    console.log('✅ Skills chargés:', detailedSkills.value.length)
+    const res = await pb.collection('skills').getList(1, 8, { sort: 'order' })
+    detailedSkills.value = res.items
   } catch (error) {
     console.error('❌ Erreur chargement skills:', error)
   }
@@ -255,19 +239,13 @@ const closeProjectModal = () => {
   selectedProject.value = null
 }
 
-// Charger les expériences depuis Supabase
+// Charger les expériences
 const loadExperiences = async () => {
   loadingExperiences.value = true
   try {
     const savedOrder = localStorage.getItem('exp-sort-order')
-    const ascending = savedOrder ? savedOrder === 'asc' : true
-    const { data, error } = await supabase
-      .from('experiences')
-      .select('*')
-      .order('start_date', { ascending })
-
-    if (error) throw error
-    experiences.value = data || []
+    const sort = savedOrder === 'desc' ? '-start_date' : 'start_date'
+    experiences.value = await pb.collection('experiences').getFullList({ sort })
   } catch (error) {
     console.error('❌ Erreur chargement expériences:', error)
   } finally {

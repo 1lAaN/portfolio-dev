@@ -178,7 +178,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const supabase = useSupabase()
+const pb = usePb()
 const categories = ref([])
 const projects = ref([])
 const loading = ref(true)
@@ -190,13 +190,7 @@ const successMessage = ref('')
 const loadCategories = async () => {
   loading.value = true
   try {
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .order('display_order', { ascending: true })
-
-    if (error) throw error
-    categories.value = data || []
+    categories.value = await pb.collection('categories').getFullList({ sort: 'display_order' })
   } catch (error) {
     console.error('Erreur:', error)
   } finally {
@@ -207,12 +201,7 @@ const loadCategories = async () => {
 // Charger les projets pour compter
 const loadProjects = async () => {
   try {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('id, category')
-
-    if (error) throw error
-    projects.value = data || []
+    projects.value = await pb.collection('projects').getFullList({ fields: 'id,category' })
   } catch (error) {
     console.error('Erreur:', error)
   }
@@ -249,12 +238,7 @@ const deleteCategory = async (category) => {
   }
 
   try {
-    const { error } = await supabase
-      .from('categories')
-      .delete()
-      .eq('id', category.id)
-
-    if (error) throw error
+    await pb.collection('categories').delete(category.id)
     
     successMessage.value = `La catégorie "${category.name}" a été supprimée avec succès`
     await loadCategories()

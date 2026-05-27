@@ -28,9 +28,8 @@ export default defineNuxtConfig({
   
   runtimeConfig: {
     public: {
-      // Supabase
-      supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL,
-      supabaseKey: process.env.NUXT_PUBLIC_SUPABASE_KEY,
+      // PocketBase
+      pocketbaseUrl: process.env.NUXT_PUBLIC_POCKETBASE_URL,
 
       // Cloudinary
       cloudinaryCloudName: process.env.NUXT_PUBLIC_CLOUDINARY_CLOUD_NAME,

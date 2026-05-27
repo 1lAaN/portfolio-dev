@@ -473,7 +473,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const supabase = useSupabase()
+const pb = usePb()
 const { feeds, directFeeds, keywords, quickSync, fullSync } = useRSSFeed()
 
 const articles = ref([])
@@ -508,13 +508,7 @@ const tagsInput = ref('')
 const loadArticles = async () => {
   loadingList.value = true
   try {
-    const { data, error } = await supabase
-      .from('tech_watch')
-      .select('*')
-      .order('published_at', { ascending: false })
-
-    if (error) throw error
-    articles.value = data || []
+    articles.value = await pb.collection('tech_watch').getFullList({ sort: '-published_at' })
   } catch (error) {
     console.error('Erreur:', error)
   } finally {
@@ -535,12 +529,7 @@ const deleteArticle = async (article) => {
   if (!confirm(`Supprimer "${article.title}" ?`)) return
 
   try {
-    const { error } = await supabase
-      .from('tech_watch')
-      .delete()
-      .eq('id', article.id)
-
-    if (error) throw error
+    await pb.collection('tech_watch').delete(article.id)
     await loadArticles()
   } catch (error) {
     console.error('Erreur:', error)
@@ -559,18 +548,9 @@ const handleSubmit = async () => {
       .filter(t => t)
 
     if (isEditing.value) {
-      const { error } = await supabase
-        .from('tech_watch')
-        .update(form.value)
-        .eq('id', editingArticle.value.id)
-
-      if (error) throw error
+      await pb.collection('tech_watch').update(editingArticle.value.id, form.value)
     } else {
-      const { error } = await supabase
-        .from('tech_watch')
-        .insert([form.value])
-
-      if (error) throw error
+      await pb.collection('tech_watch').create(form.value)
     }
 
     handleCancel()
