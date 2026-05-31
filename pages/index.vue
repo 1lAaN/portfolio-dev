@@ -7,10 +7,18 @@
           <h1 class="text-6xl font-bold text-gray-900 mb-6">
             Bonjour, je suis Ihlane
           </h1>
-          <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            Développeur junior en 2eme année de BTS SIO SLAM
+          <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-4">
+            {{ profile.subtitle || 'Développeur junior en 2ème année de BTS SIO SLAM' }}
           </p>
-          <div class="flex justify-center gap-4">
+          <div v-if="profile.open_to_work" class="mb-4">
+            <span class="inline-block px-4 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
+              🟢 Open to work — alternance en développement
+            </span>
+          </div>
+          <p v-if="profile.status_text" class="text-sm text-gray-500 max-w-xl mx-auto mb-6 italic">
+            {{ profile.status_text }}
+          </p>
+          <div class="flex justify-center gap-4" :class="profile.status_text ? '' : 'mt-8'">
             <a
               href="#projets"
               class="px-8 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
@@ -205,6 +213,7 @@ const selectedProject = ref(null)
 const loadingExperiences = ref(true)
 const experiences = ref([])
 const timelineItems = ref([])
+const profile = ref({ subtitle: '', status_text: '', open_to_work: false })
 let observer = null
 
 // Charger les projets récents
@@ -299,8 +308,19 @@ watch(experiences, async () => {
   })
 })
 
+// Charger le profil
+const loadProfile = async () => {
+  try {
+    const res = await pb.collection('profile').getList(1, 1)
+    if (res.items.length > 0) profile.value = res.items[0]
+  } catch (e) {
+    console.error('Erreur chargement profil:', e)
+  }
+}
+
 // Charger au montage du composant
 onMounted(() => {
+  loadProfile()
   loadRecentProjects()
   loadSkills()
   loadExperiences()

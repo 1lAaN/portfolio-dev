@@ -1,5 +1,9 @@
 <template>
   <div>
+    <NuxtLink to="/admin" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-800 mb-4 transition-colors">
+      <Icon name="mdi:arrow-left" class="w-4 h-4 mr-1" />
+      Dashboard
+    </NuxtLink>
     <div class="mb-8 flex justify-between items-center">
       <div>
         <h1 class="text-3xl font-bold text-gray-900">Gestion des projets</h1>
